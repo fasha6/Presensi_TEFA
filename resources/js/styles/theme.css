@@ -1,0 +1,340 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  
+  /* Academic Color System */
+  --primary-blue: #1E3A8A;
+  --primary-blue-light: #3B82F6;
+  --secondary-gray: #F8FAFC;
+  --secondary-gray-medium: #E2E8F0;
+  --secondary-gray-dark: #64748B;
+  --success-green: #16A34A;
+  --warning-amber: #F59E0B;
+  --danger-red: #DC2626;
+  --info-blue: #2563EB;
+  --background-light: #F1F5F9;
+  
+  /* Status Colors */
+  --status-present: #16A34A;
+  --status-late: #F59E0B;
+  --status-absent: #DC2626;
+  --status-permission: #2563EB;
+  
+  /* Base Colors */
+  --background: #F1F5F9;
+  --foreground: #1E293B;
+  --card: #ffffff;
+  --card-foreground: #1E293B;
+  --popover: #ffffff;
+  --popover-foreground: #1E293B;
+  --primary: #1E3A8A;
+  --primary-foreground: #ffffff;
+  --secondary: #E2E8F0;
+  --secondary-foreground: #1E293B;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #F8FAFC;
+  --accent-foreground: #1E293B;
+  --destructive: #DC2626;
+  --destructive-foreground: #ffffff;
+  --border: #E2E8F0;
+  --input: transparent;
+  --input-background: #ffffff;
+  --switch-background: #E2E8F0;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-normal: 400;
+  --ring: #1E3A8A;
+  --chart-1: #1E3A8A;
+  --chart-2: #16A34A;
+  --chart-3: #F59E0B;
+  --chart-4: #DC2626;
+  --chart-5: #2563EB;
+  --radius: 12px;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1E293B;
+  --sidebar-primary: #1E3A8A;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #F8FAFC;
+  --sidebar-accent-foreground: #1E3A8A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #1E3A8A;
+}
+
+.dark {
+  --background: #17232A;
+  --foreground: #F3F6F7;
+  --card: #233138;
+  --card-foreground: #F3F6F7;
+  --popover: #2A3942;
+  --popover-foreground: #F3F6F7;
+  --primary: #38BDF8;
+  --primary-foreground: #061826;
+  --secondary: #33444D;
+  --secondary-foreground: #F3F6F7;
+  --muted: #2A3942;
+  --muted-foreground: #AEBBC2;
+  --accent: #33444D;
+  --accent-foreground: #F3F6F7;
+  --destructive: #F15C6D;
+  --destructive-foreground: #ffffff;
+  --border: #3A4A53;
+  --input: #33444D;
+  --input-background: #33444D;
+  --switch-background: #33444D;
+  --ring: #38BDF8;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-normal: 400;
+  --chart-1: #38BDF8;
+  --chart-2: #34D399;
+  --chart-3: #FBBF24;
+  --chart-4: #F15C6D;
+  --chart-5: #53BDEB;
+  --sidebar: #233138;
+  --sidebar-foreground: #F3F6F7;
+  --sidebar-primary: #38BDF8;
+  --sidebar-primary-foreground: #061826;
+  --sidebar-accent: #33444D;
+  --sidebar-accent-foreground: #F3F6F7;
+  --sidebar-border: #3A4A53;
+  --sidebar-ring: #38BDF8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Academic Color Tokens */
+  --color-status-present: var(--status-present);
+  --color-status-late: var(--status-late);
+  --color-status-absent: var(--status-absent);
+  --color-status-permission: var(--status-permission);
+  --color-success: var(--success-green);
+  --color-warning: var(--warning-amber);
+  --color-danger: var(--danger-red);
+  --color-info: var(--info-blue);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .dark body {
+    color-scheme: dark;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@layer utilities {
+  .dark .bg-\[\#F1F5F9\] {
+    background-color: #17232A;
+  }
+
+  .dark .bg-white,
+  .dark .bg-gray-50,
+  .dark .bg-slate-50 {
+    background-color: #233138;
+  }
+
+  .dark .bg-\[\#1E3A8A\],
+  .dark .hover\:bg-\[\#1E3A8A\]\/90:hover {
+    background-color: #38BDF8;
+    color: #061826;
+  }
+
+  .dark .bg-blue-100,
+  .dark .bg-sky-100 {
+    background-color: rgb(83 189 235 / 0.16);
+  }
+
+  .dark .bg-green-100 {
+    background-color: rgb(37 211 102 / 0.16);
+  }
+
+  .dark .bg-amber-100,
+  .dark .bg-yellow-100 {
+    background-color: rgb(251 191 36 / 0.18);
+  }
+
+  .dark .bg-orange-100 {
+    background-color: rgb(251 146 60 / 0.18);
+  }
+
+  .dark .bg-red-50,
+  .dark .bg-red-100 {
+    background-color: rgb(248 113 113 / 0.16);
+  }
+
+  .dark .bg-purple-100 {
+    background-color: rgb(192 132 252 / 0.18);
+  }
+
+  .dark .hover\:bg-gray-50:hover,
+  .dark .hover\:bg-gray-100:hover {
+    background-color: #33444D;
+  }
+
+  .dark .border-gray-100,
+  .dark .border-gray-200,
+  .dark .border-slate-200 {
+    border-color: #3A4A53;
+  }
+
+  .dark .divide-gray-200 > :not(:last-child) {
+    border-color: #3A4A53;
+  }
+
+  .dark .text-gray-900,
+  .dark .text-slate-900,
+  .dark .text-gray-800,
+  .dark .text-slate-800 {
+    color: #F3F6F7;
+  }
+
+  .dark .text-gray-700,
+  .dark .text-slate-700,
+  .dark .text-gray-600,
+  .dark .text-slate-600 {
+    color: #D7DEE2;
+  }
+
+  .dark .text-gray-500,
+  .dark .text-slate-500,
+  .dark .text-gray-400,
+  .dark .text-slate-400 {
+    color: #AEBBC2;
+  }
+
+  .dark .text-blue-600,
+  .dark .text-blue-700 {
+    color: #8BDCF7;
+  }
+
+  .dark .text-green-600,
+  .dark .text-green-700 {
+    color: #7EE3C3;
+  }
+
+  .dark .text-amber-600,
+  .dark .text-amber-700,
+  .dark .text-yellow-600,
+  .dark .text-yellow-700 {
+    color: #FCD34D;
+  }
+
+  .dark .text-orange-600,
+  .dark .text-orange-700 {
+    color: #FDBA74;
+  }
+
+  .dark .text-red-600,
+  .dark .text-red-700 {
+    color: #FCA5A5;
+  }
+
+  .dark .text-purple-600,
+  .dark .text-purple-700 {
+    color: #D8B4FE;
+  }
+
+  .dark .shadow-lg,
+  .dark .shadow-sm,
+  .dark .shadow-md {
+    box-shadow: 0 12px 30px rgb(0 0 0 / 0.2);
+  }
+}

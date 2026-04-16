@@ -1,0 +1,280 @@
+import { Header } from "../components/layout/header";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Switch } from "../components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { User, Bell, Database, Shield, Save } from "lucide-react";
+import { toast } from "sonner";
+
+export function SettingsPage() {
+  const handleSave = () => {
+    toast.success("Pengaturan berhasil disimpan!");
+  };
+
+  return (
+    <div>
+      <Header title="Pengaturan" breadcrumbs={["Pengaturan"]} />
+      
+      <div className="p-8 max-w-[1280px]">
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="notifications">Notifikasi</TabsTrigger>
+            <TabsTrigger value="system">Sistem</TabsTrigger>
+            <TabsTrigger value="security">Keamanan</TabsTrigger>
+          </TabsList>
+
+          {/* Profile Settings */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Informasi Profil
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Nama Lengkap</label>
+                    <Input defaultValue="Budi Santoso, S.Pd" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">NIP</label>
+                    <Input defaultValue="196801011990031001" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Email</label>
+                    <Input type="email" defaultValue="budi.santoso@smkn1garut.sch.id" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Nomor HP</label>
+                    <Input defaultValue="081234567890" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Role</label>
+                  <Select defaultValue="teacher">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="teacher">Guru Mata Pelajaran</SelectItem>
+                      <SelectItem value="homeroom">Wali Kelas</SelectItem>
+                      <SelectItem value="bk">Guru BK</SelectItem>
+                      <SelectItem value="principal">Kepala Sekolah</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Mata Pelajaran</label>
+                  <Input defaultValue="PWPB, PBO" />
+                </div>
+
+                <Button onClick={handleSave} className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Perubahan
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notification Settings */}
+          <TabsContent value="notifications" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Preferensi Notifikasi
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Notifikasi Email</p>
+                    <p className="text-sm text-gray-600">Terima notifikasi via email</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Notifikasi Push</p>
+                    <p className="text-sm text-gray-600">Notifikasi langsung di browser</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Notifikasi Kehadiran</p>
+                    <p className="text-sm text-gray-600">Notifikasi ketika ada siswa tidak hadir</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Notifikasi Pelanggaran</p>
+                    <p className="text-sm text-gray-600">Notifikasi pelanggaran siswa</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Ringkasan Harian</p>
+                    <p className="text-sm text-gray-600">Terima ringkasan aktivitas setiap hari</p>
+                  </div>
+                  <Switch />
+                </div>
+
+                <Button onClick={handleSave} className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Perubahan
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* System Settings */}
+          <TabsContent value="system" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Pengaturan Sistem
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Tahun Ajaran</label>
+                  <Select defaultValue="2025-2026">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2025-2026">2025/2026</SelectItem>
+                      <SelectItem value="2024-2025">2024/2025</SelectItem>
+                      <SelectItem value="2023-2024">2023/2024</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Semester</label>
+                  <Select defaultValue="genap">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ganjil">Ganjil</SelectItem>
+                      <SelectItem value="genap">Genap</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Batas Keterlambatan (menit)</label>
+                  <Input type="number" defaultValue="15" />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Batas Absen untuk SP (kali)</label>
+                  <Input type="number" defaultValue="3" />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Auto-send Notifikasi</p>
+                    <p className="text-sm text-gray-600">Kirim notifikasi otomatis ke orang tua</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Mode Maintenance</p>
+                    <p className="text-sm text-gray-600">Nonaktifkan akses sementara</p>
+                  </div>
+                  <Switch />
+                </div>
+
+                <Button onClick={handleSave} className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Perubahan
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Security Settings */}
+          <TabsContent value="security" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Keamanan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Password Saat Ini</label>
+                  <Input type="password" placeholder="Masukkan password saat ini" />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Password Baru</label>
+                  <Input type="password" placeholder="Masukkan password baru" />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Konfirmasi Password Baru</label>
+                  <Input type="password" placeholder="Konfirmasi password baru" />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Two-Factor Authentication</p>
+                    <p className="text-sm text-gray-600">Tambahkan lapisan keamanan ekstra</p>
+                  </div>
+                  <Switch />
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium text-gray-900 mb-3">Aktivitas Login Terakhir</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Desktop - Chrome</span>
+                      <span className="text-gray-900">Hari ini, 09:15</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Mobile - Safari</span>
+                      <span className="text-gray-900">Kemarin, 15:30</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Desktop - Firefox</span>
+                      <span className="text-gray-900">2 hari lalu, 08:00</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={handleSave} className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                  <Save className="w-4 h-4 mr-2" />
+                  Update Password
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
