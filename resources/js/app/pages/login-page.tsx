@@ -15,7 +15,8 @@ export function LoginPage() {
   const [password, setPassword] = useState("demo123");
   const [error, setError] = useState("");
 
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
+  const loginState = (location.state as { from?: string; resetRedirect?: boolean } | null) ?? null;
+  const redirectTo = loginState?.resetRedirect ? "/" : (loginState?.from ?? "/");
 
   if (user) {
     return <Navigate to={redirectTo} replace />;
