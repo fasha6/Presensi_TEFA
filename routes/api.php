@@ -6,3 +6,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResource('students', StudentController::class);
 Route::apiResource('attendances', AttendanceController::class)->only(['index', 'store']);
+Route::apiResource('warning-letters', \App\Http\Controllers\Api\WarningLetterController::class);
