@@ -86,7 +86,7 @@ export function StudentsPage() {
     <div>
       <Header title="Data Siswa" breadcrumbs={["Siswa"]} />
       
-      <div className="p-8 max-w-[1280px]">
+      <div className="w-full p-4 sm:p-6 lg:p-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card>

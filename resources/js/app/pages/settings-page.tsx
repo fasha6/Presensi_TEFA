@@ -54,7 +54,7 @@ export function SettingsPage() {
     <div>
       <Header title="Pengaturan" breadcrumbs={["Pengaturan"]} />
       
-      <div className="p-8 max-w-[1280px]">
+      <div className="w-full p-4 sm:p-6 lg:p-8">
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profil</TabsTrigger>
