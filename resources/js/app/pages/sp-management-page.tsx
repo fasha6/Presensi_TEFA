@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -23,63 +23,23 @@ interface SPRecord {
   parentNotified: boolean;
 }
 
-const mockSPRecords: SPRecord[] = [
-  {
-    id: 1,
-    number: "SP-001/2026",
-    studentName: "Ahmad Rizki Maulana",
-    class: "XII RPL 1",
-    type: "SP 1",
-    reason: "Akumulasi keterlambatan 5x dalam 1 bulan",
-    date: "2026-04-01",
-    status: "active",
-    issuedBy: "Bu Hani",
-    parentNotified: true
-  },
-  {
-    id: 2,
-    number: "SP-002/2026",
-    studentName: "Siti Nurhaliza",
-    class: "XI TKJ 2",
-    type: "SP 1",
-    reason: "Tidak menggunakan seragam sesuai ketentuan 3x",
-    date: "2026-04-05",
-    status: "active",
-    issuedBy: "Bu Hani",
-    parentNotified: true
-  },
-  {
-    id: 3,
-    number: "SP-003/2026",
-    studentName: "Budi Santoso",
-    class: "XII MM 1",
-    type: "SP 2",
-    reason: "Bolos sekolah tanpa keterangan",
-    date: "2026-03-28",
-    status: "completed",
-    issuedBy: "Bu Hani",
-    parentNotified: true
-  },
-  {
-    id: 4,
-    number: "SP-004/2026",
-    studentName: "Dedi Kurniawan",
-    class: "XI RPL 2",
-    type: "SP 1",
-    reason: "Terlambat mengumpulkan tugas berulang kali",
-    date: "2026-04-10",
-    status: "active",
-    issuedBy: "Bu Hani",
-    parentNotified: false
-  },
-];
+
 
 export function SPManagementPage() {
-  const [records, setRecords] = useState(mockSPRecords);
+  const [records, setRecords] = useState<SPRecord[]>([]);
   const [filterClass, setFilterClass] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedRecord, setSelectedRecord] = useState<SPRecord | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  function refreshSPRecords() {
+  fetch("/api/warning-letters")
+    .then(res => res.json())
+    .then(data => {
+      setRecords(Array.isArray(data) ? data.map(mapWarningLetterToSPRecord) : []);
+    })
+    .catch(() => setRecords([]));
+}
 
   const filteredRecords = records.filter(record => {
     if (filterClass !== "all" && !record.class.includes(filterClass)) return false;
@@ -100,7 +60,7 @@ export function SPManagementPage() {
     <div>
       <Header title="SP & Pembinaan" breadcrumbs={["SP & Pembinaan"]} />
       
-      <div className="w-full p-4 sm:p-6 lg:p-8">
+      <div className="p-8 max-w-[1280px]">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <Card>
@@ -217,6 +177,7 @@ export function SPManagementPage() {
                     onSubmitSuccess={() => {
                       setIsCreateOpen(false);
                       toast.success("SP berhasil diterbitkan!");
+                      refreshSPRecords();
                     }}
                   />
                 </DialogContent>
@@ -342,6 +303,21 @@ function CoachingStep({ title, detail, status }: { title: string; detail: string
   );
 }
 
+function mapWarningLetterToSPRecord(wl: any): SPRecord {
+  return {
+    id: wl.id,
+    number: wl.letter_number || wl.number || `SP-${wl.id}`,
+    studentName: wl.student_name || wl.student?.name || wl.name || "-",
+    class: wl.class || wl.student?.class || wl.class_name || "-",
+    type: wl.type || wl.sp_type || "SP 1",
+    reason: wl.reason || "-",
+    date: wl.date || wl.created_at || new Date().toISOString(),
+    status: wl.status || "active",
+    issuedBy: wl.issued_by || "BK",
+    parentNotified: wl.parent_notified ?? false,
+  };
+}
+
 function NewSPForm({
   onCancel,
   onSubmitSuccess,
@@ -349,22 +325,92 @@ function NewSPForm({
   onCancel: () => void;
   onSubmitSuccess: () => void;
 }) {
+  const [students, setStudents] = useState<any[]>([]);
+  const [studentId, setStudentId] = useState("");
+  const [className, setClassName] = useState("");
+  const [type, setType] = useState("");
+  const [reason, setReason] = useState("");
+  const [followUp, setFollowUp] = useState("");
+  const [notifyParent, setNotifyParent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+  fetch("/api/students")
+    .then((res) => res.json())
+    .then((data) => {
+      // Jika API return { data: [...] }
+      if (Array.isArray(data)) setStudents(data);
+      else if (Array.isArray(data.data)) setStudents(data.data);
+      else setStudents([]);
+    })
+    .catch(() => setStudents([]));
+}, []);
+
+  useEffect(() => {
+    const selected = students.find((s) => String(s.id) === String(studentId));
+    setClassName(selected ? selected.class : "");
+  }, [studentId, students]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!studentId || !type || !reason) {
+      setError("Semua field wajib diisi.");
+      return;
+    }
+    setLoading(true);
+    const today = new Date();
+    const date = today.toISOString().slice(0, 10);
+    const letter_number = `SP-${today.getTime()}`;
+    try {
+      const res = await fetch("/api/warning-letters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          student_id: studentId,
+          letter_number,
+          date,
+          reason,
+        }),
+      });
+      if (!res.ok) throw new Error("Gagal menerbitkan SP");
+      onSubmitSuccess();
+    } catch (err: any) {
+      setError(err.message || "Gagal menerbitkan SP");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmitSuccess(); }}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {error && <div className="text-red-600 text-sm">{error}</div>}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium text-gray-700 mb-2 block">Nama Siswa</label>
-          <Input placeholder="Pilih siswa..." />
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={studentId}
+            onChange={e => setStudentId(e.target.value)}
+            required
+          >
+            <option value="">Pilih siswa...</option>
+            {students.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700 mb-2 block">Kelas</label>
-          <Input placeholder="XII RPL 1" disabled />
+          <Input value={className} disabled />
         </div>
       </div>
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-2 block">Jenis SP</label>
-        <Select>
+        <Select value={type} onValueChange={setType}>
           <SelectTrigger>
             <SelectValue placeholder="Pilih jenis SP" />
           </SelectTrigger>
@@ -381,6 +427,9 @@ function NewSPForm({
         <Textarea 
           placeholder="Jelaskan alasan penerbitan SP..."
           rows={4}
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          required
         />
       </div>
 
