@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->string('letter_number')->unique();
+            $table->enum('type', ['SP1', 'SP2', 'SP3']);
             $table->date('date');
             $table->text('reason');
             $table->timestamps();

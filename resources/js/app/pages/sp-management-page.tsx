@@ -33,13 +33,17 @@ export function SPManagementPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   function refreshSPRecords() {
-  fetch("/api/warning-letters")
-    .then(res => res.json())
-    .then(data => {
-      setRecords(Array.isArray(data) ? data.map(mapWarningLetterToSPRecord) : []);
-    })
-    .catch(() => setRecords([]));
-}
+    fetch("/api/warning-letters")
+      .then(res => res.json())
+      .then(data => {
+        setRecords(Array.isArray(data) ? data.map(mapWarningLetterToSPRecord) : []);
+      })
+      .catch(() => setRecords([]));
+  }
+
+  useEffect(() => {
+    refreshSPRecords();
+  }, []);
 
   const filteredRecords = records.filter(record => {
     if (filterClass !== "all" && !record.class.includes(filterClass)) return false;
@@ -308,7 +312,7 @@ function mapWarningLetterToSPRecord(wl: any): SPRecord {
     id: wl.id,
     number: wl.letter_number || wl.number || `SP-${wl.id}`,
     studentName: wl.student_name || wl.student?.name || wl.name || "-",
-    class: wl.class || wl.student?.class || wl.class_name || "-",
+    class: wl.class || wl.student?.class_name || "-",
     type: wl.type || wl.sp_type || "SP 1",
     reason: wl.reason || "-",
     date: wl.date || wl.created_at || new Date().toISOString(),
@@ -373,6 +377,7 @@ function NewSPForm({
           letter_number,
           date,
           reason,
+          type,
         }),
       });
       if (!res.ok) throw new Error("Gagal menerbitkan SP");
@@ -415,9 +420,9 @@ function NewSPForm({
             <SelectValue placeholder="Pilih jenis SP" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sp1">SP 1 (Peringatan Pertama)</SelectItem>
-            <SelectItem value="sp2">SP 2 (Peringatan Kedua)</SelectItem>
-            <SelectItem value="sp3">SP 3 (Peringatan Terakhir)</SelectItem>
+            <SelectItem value="SP1">SP 1 (Peringatan Pertama)</SelectItem>
+            <SelectItem value="SP2">SP 2 (Peringatan Kedua)</SelectItem>
+            <SelectItem value="SP3">SP 3 (Peringatan Terakhir)</SelectItem>
           </SelectContent>
         </Select>
       </div>

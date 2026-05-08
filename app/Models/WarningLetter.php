@@ -12,6 +12,7 @@ class WarningLetter extends Model
     protected $fillable = [
         'student_id',
         'letter_number',
+        'type',
         'date',
         'reason',
     ];
