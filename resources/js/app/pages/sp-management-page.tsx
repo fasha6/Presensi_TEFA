@@ -9,6 +9,7 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { FileText, Plus, Filter, Eye, CheckCircle, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { schoolMajors } from "../lib/role-scope";
 
 interface SPRecord {
   id: number;
@@ -147,10 +148,11 @@ export function SPManagementPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Kelas</SelectItem>
-                    <SelectItem value="RPL">RPL</SelectItem>
-                    <SelectItem value="TKJ">TKJ</SelectItem>
-                    <SelectItem value="MM">MM</SelectItem>
-                    <SelectItem value="OTKP">OTKP</SelectItem>
+                    {schoolMajors.map((major) => (
+                      <SelectItem key={major} value={major}>
+                        {major}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>

@@ -64,7 +64,7 @@ export function StudentDetailPage() {
     id: 1,
     name: "Ahmad Rizki Maulana",
     nis: "20240001",
-    class: "XII RPL 1",
+    class: "X PPL 1",
     photo: null,
     attendancePercentage: 85,
     riskLevel: "medium" as const,

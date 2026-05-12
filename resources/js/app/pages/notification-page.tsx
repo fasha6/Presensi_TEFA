@@ -28,7 +28,7 @@ const mockNotifications: Notification[] = [
   {
     id: 1,
     studentName: "Ahmad Rizki Maulana",
-    class: "XII RPL 1",
+    class: "X PPL 1",
     parentPhone: "081234567890",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Ahmad Rizki Maulana tidak hadir pada mata pelajaran PWPB hari ini (14 April 2026) tanpa keterangan. Mohon konfirmasi. Terima kasih.",
     type: "absence",
@@ -39,7 +39,7 @@ const mockNotifications: Notification[] = [
   {
     id: 2,
     studentName: "Siti Nurhaliza",
-    class: "XI TKJ 2",
+    class: "XI PPL 1",
     parentPhone: "081298765432",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Siti Nurhaliza terlambat masuk sekolah hari ini (14 April 2026) pukul 08:15. Mohon perhatian. Terima kasih.",
     type: "late",
@@ -50,7 +50,7 @@ const mockNotifications: Notification[] = [
   {
     id: 3,
     studentName: "Budi Santoso",
-    class: "XII MM 1",
+    class: "XII TJK 3",
     parentPhone: "081276543210",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Budi Santoso telah menerima Surat Peringatan (SP 1) terkait pelanggaran tata tertib sekolah. Mohon untuk dapat hadir ke sekolah. Terima kasih.",
     type: "sp",
@@ -61,7 +61,7 @@ const mockNotifications: Notification[] = [
   {
     id: 4,
     studentName: "Devi Anggraini",
-    class: "XI RPL 1",
+    class: "XI AKL 3",
     parentPhone: "081265432109",
     message: "Assalamualaikum, Bapak/Ibu. Selamat! Ananda Devi Anggraini meraih Juara 1 Lomba Web Design tingkat Provinsi. Terima kasih atas dukungannya.",
     type: "achievement",
@@ -72,7 +72,7 @@ const mockNotifications: Notification[] = [
   {
     id: 5,
     studentName: "Eko Prasetyo",
-    class: "XII RPL 2",
+    class: "XII PM 2",
     parentPhone: "081254321098",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Eko Prasetyo tidak hadir hari ini. Mohon konfirmasi.",
     type: "absence",
@@ -82,7 +82,7 @@ const mockNotifications: Notification[] = [
   {
     id: 6,
     studentName: "Fatimah Zahra",
-    class: "XI MM 2",
+    class: "XI MPL 2",
     parentPhone: "081243210987",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Fatimah Zahra terlambat masuk kelas.",
     type: "late",
@@ -116,7 +116,7 @@ export function NotificationPage() {
     }
 
     if (user?.role === "major_head") {
-      return notif.class.includes("RPL");
+      return notif.class.includes("PPL");
     }
 
     return true;
@@ -504,9 +504,9 @@ function NewNotificationForm({
             <SelectValue placeholder="Pilih siswa..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Ahmad Rizki Maulana - XII RPL 1</SelectItem>
-            <SelectItem value="2">Siti Nurhaliza - XI TKJ 2</SelectItem>
-            <SelectItem value="3">Budi Santoso - XII MM 1</SelectItem>
+            <SelectItem value="1">Ahmad Rizki Maulana - X PPL 1</SelectItem>
+            <SelectItem value="2">Siti Nurhaliza - XI PPL 1</SelectItem>
+            <SelectItem value="3">Budi Santoso - XII TJK 3</SelectItem>
           </SelectContent>
         </Select>
       </div>

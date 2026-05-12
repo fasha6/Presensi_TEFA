@@ -8,7 +8,7 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Search, Filter, Eye, TrendingUp, TrendingDown } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { getAllowedClassesForRole, isClassAllowedForRole, secretaryAssignment } from "../lib/role-scope";
+import { getAllowedClassesForRole, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
 
 interface Student {
   id: number;
@@ -172,10 +172,11 @@ export function StudentsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Jurusan</SelectItem>
-                    <SelectItem value="RPL">RPL</SelectItem>
-                    <SelectItem value="TKJ">TKJ</SelectItem>
-                    <SelectItem value="MM">MM</SelectItem>
-                    <SelectItem value="OTKP">OTKP</SelectItem>
+                    {schoolMajors.map((major) => (
+                      <SelectItem key={major} value={major}>
+                        {major}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -187,9 +188,9 @@ export function StudentsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{isTeacher ? "Semua Kelas Jadwal" : "Semua Kelas"}</SelectItem>
-                    {(allowedClasses ?? ["XII", "XI", "X"]).map((className) => (
+                    {(allowedClasses ?? schoolClasses).map((className) => (
                       <SelectItem key={className} value={className}>
-                        {allowedClasses ? className : `Kelas ${className}`}
+                        {className}
                       </SelectItem>
                     ))}
                   </SelectContent>

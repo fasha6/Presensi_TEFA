@@ -107,7 +107,7 @@ export function Header({ title, breadcrumbs = [] }: HeaderProps) {
                 <DropdownMenuItem className="flex-col items-start py-3">
                   <p className="font-medium text-sm">Presensi Selesai</p>
                   <p className="text-xs text-gray-500 mt-1 dark:text-muted-foreground">
-                    Presensi kelas XII RPL 1 telah lengkap
+                    Presensi kelas X PPL 1 telah lengkap
                   </p>
                   <p className="text-xs text-gray-400 mt-1 dark:text-muted-foreground">2 jam lalu</p>
                 </DropdownMenuItem>

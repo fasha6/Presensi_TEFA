@@ -39,7 +39,7 @@ export const demoUsers: DemoUser[] = [
     email: "sekretaris@demo.test",
     password: "demo123",
     role: "secretary",
-    roleLabel: "Siswa - Sekretaris XII RPL 1",
+    roleLabel: "Siswa - Sekretaris X PPL 1",
   },
   {
     id: "teacher",
@@ -63,7 +63,7 @@ export const demoUsers: DemoUser[] = [
     email: "kaprodi@demo.test",
     password: "demo123",
     role: "major_head",
-    roleLabel: "Kaprodi RPL",
+    roleLabel: "Kaprodi PPL",
   },
   {
     id: "bk",

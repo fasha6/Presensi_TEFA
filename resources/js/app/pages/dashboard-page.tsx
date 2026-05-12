@@ -7,6 +7,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Badge } from "../components/ui/badge";
 import { DemoRole, useAuth } from "../lib/auth";
 import { secretaryAssignment, teacherScheduleToday } from "../lib/role-scope";
+import { Link } from "react-router";
 
 const attendanceTrendData = [
   { name: "Sen", hadir: 285, izin: 10, sakit: 5, alpha: 0 },
@@ -17,10 +18,16 @@ const attendanceTrendData = [
 ];
 
 const jurusanData = [
-  { name: "RPL", percentage: 95 },
-  { name: "TKJ", percentage: 92 },
-  { name: "MM", percentage: 88 },
-  { name: "OTKP", percentage: 90 },
+  { name: "AKL", percentage: 93 },
+  { name: "PM", percentage: 90 },
+  { name: "MPL", percentage: 92 },
+  { name: "TLG", percentage: 88 },
+  { name: "TKF", percentage: 91 },
+  { name: "TLM", percentage: 89 },
+  { name: "DKV", percentage: 94 },
+  { name: "TET", percentage: 87 },
+  { name: "PPL", percentage: 95 },
+  { name: "TJK", percentage: 92 },
 ];
 
 const statusDistribution = [
@@ -127,7 +134,7 @@ function StudentDashboard() {
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-gray-600">Kelas</span>
-              <span className="font-medium">XII RPL 1</span>
+              <span className="font-medium">X PPL 1</span>
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-gray-600">NIS</span>
@@ -145,9 +152,9 @@ function StudentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-              <ScheduleItem time="09:15 - 10:45" class="XII RPL 1" subject="PBO" status="current" />
-              <ScheduleItem time="11:00 - 12:30" class="XII RPL 1" subject="Basis Data" status="upcoming" />
+              <ScheduleItem time="07:30 - 09:00" class="X PPL 1" subject="PWPB" status="completed" />
+              <ScheduleItem time="09:15 - 10:45" class="X PPL 1" subject="PBO" status="current" />
+              <ScheduleItem time="11:00 - 12:30" class="X PPL 1" subject="Basis Data" status="upcoming" />
             </div>
           </CardContent>
         </Card>
@@ -194,7 +201,7 @@ function ParentDashboard() {
           </div>
           <div className="flex justify-between border-b pb-3">
             <span className="text-gray-600">Kelas</span>
-            <span className="font-medium">XII RPL 1</span>
+            <span className="font-medium">X PPL 1</span>
           </div>
           <div className="flex justify-between border-b pb-3">
             <span className="text-gray-600">Status Terakhir</span>
@@ -277,8 +284,8 @@ function TeacherDashboard() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
-                Mulai Input Presensi
+              <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                <Link to="/presensi">Mulai Input Presensi</Link>
               </Button>
             </div>
           </div>
@@ -357,7 +364,7 @@ function SecretaryDashboard() {
             <ScheduleItem time="Awal hari" class={secretaryAssignment.className} subject="Presensi kelas" status="current" />
             <p className="text-sm text-gray-600">Tidak memilih kelas, mapel, atau jam. Input tercatat sebagai sekretaris {secretaryAssignment.className}.</p>
             <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
-              <a href="/presensi">Input Presensi Kelas</a>
+              <Link to="/presensi">Input Presensi Kelas</Link>
             </Button>
           </CardContent>
         </Card>
@@ -539,9 +546,9 @@ function BKDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <RiskStudent name="Ahmad Rizki Maulana" class="XII RPL 1" violations={8} sp={2} level="high" />
-            <RiskStudent name="Dedi Kurniawan" class="XI TKJ 2" violations={6} sp={1} level="high" />
-            <RiskStudent name="Rina Amelia" class="XII MM 1" violations={5} sp={1} level="medium" />
+            <RiskStudent name="Ahmad Rizki Maulana" class="X PPL 1" violations={8} sp={2} level="high" />
+            <RiskStudent name="Dedi Kurniawan" class="XII TJK 3" violations={6} sp={1} level="high" />
+            <RiskStudent name="Rina Amelia" class="XI MPL 2" violations={5} sp={1} level="medium" />
           </div>
         </CardContent>
       </Card>
@@ -642,11 +649,11 @@ function PrincipalDashboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Kelas Terbaik</span>
-                <span className="font-semibold">XII RPL 1</span>
+                <span className="font-semibold">X PPL 1</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Jurusan Terbaik</span>
-                <span className="font-semibold">RPL (95%)</span>
+                <span className="font-semibold">PPL (95%)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">SP Terselesaikan</span>
@@ -663,26 +670,28 @@ function PrincipalDashboard() {
 function MajorHeadDashboard() {
   return (
     <div className="space-y-6">
-      <ScopeNotice title="Akses Kaprodi" description="Rekap jurusan RPL. Tidak menginput presensi langsung, fokus evaluasi kelas dan tren jurusan." />
+      <ScopeNotice title="Akses Kaprodi" description="Rekap jurusan PPL. Tidak menginput presensi langsung, fokus evaluasi kelas dan tren jurusan." />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Siswa RPL" value="432" icon={Users} iconColor="bg-blue-100 text-blue-600" />
-        <StatCard title="Kehadiran RPL" value="95%" icon={TrendingUp} iconColor="bg-green-100 text-green-600" trend="+1.8%" />
+        <StatCard title="Siswa PPL" value="216" icon={Users} iconColor="bg-blue-100 text-blue-600" />
+        <StatCard title="Kehadiran PPL" value="95%" icon={TrendingUp} iconColor="bg-green-100 text-green-600" trend="+1.8%" />
         <StatCard title="Kelas Perlu Perhatian" value="2" icon={AlertTriangle} iconColor="bg-amber-100 text-amber-600" />
         <StatCard title="SP Aktif" value="6" icon={FileText} iconColor="bg-red-100 text-red-600" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Perbandingan Kehadiran Kelas RPL</CardTitle>
+          <CardTitle>Perbandingan Kehadiran Kelas PPL</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={[
-              { name: "X RPL 1", percentage: 96 },
-              { name: "XI RPL 1", percentage: 92 },
-              { name: "XII RPL 1", percentage: 95 },
-              { name: "XII RPL 2", percentage: 89 },
+              { name: "X PPL 1", percentage: 96 },
+              { name: "X PPL 2", percentage: 93 },
+              { name: "XI PPL 1", percentage: 92 },
+              { name: "XI PPL 2", percentage: 89 },
+              { name: "XII PPL 1", percentage: 95 },
+              { name: "XII PPL 2", percentage: 91 },
             ]}>
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
               <XAxis dataKey="name" stroke={chartTextColor} />
@@ -794,7 +803,7 @@ function ScopeNotice({ title, description }: { title: string; description: strin
 function AuditLogPanel() {
   const logs = [
     { actor: "Pak Budi", action: "mengubah status Ahmad", from: "Alpha", to: "Izin", time: "10:18", reason: "Surat izin diterima" },
-    { actor: "Nadia Putri", action: "menginput presensi XII RPL 1", from: "-", to: "Jam 2 selesai", time: "09:42", reason: "Input sekretaris kelas" },
+    { actor: "Nadia Putri", action: "menginput presensi X PPL 1", from: "-", to: "Awal hari selesai", time: "09:42", reason: "Input sekretaris kelas" },
     { actor: "Bu Rina", action: "menerbitkan SP 1", from: "Review", to: "Aktif", time: "08:55", reason: "Alpha berulang" },
   ];
 

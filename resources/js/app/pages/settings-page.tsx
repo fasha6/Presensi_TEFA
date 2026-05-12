@@ -24,9 +24,9 @@ const roleOptions: Array<{ value: DemoRole; label: string }> = [
 ];
 
 const roleProfileMap: Record<DemoRole, { nip: string; phone: string; subjects: string }> = {
-  secretary: { nip: "-", phone: "081290001111", subjects: "Sekretaris Kelas XII RPL 1" },
-  homeroom: { nip: "197902142005012003", phone: "081290001112", subjects: "Wali Kelas XII RPL 1" },
-  major_head: { nip: "197701102003121004", phone: "081290001113", subjects: "Kaprodi RPL" },
+  secretary: { nip: "-", phone: "081290001111", subjects: "Sekretaris Kelas X PPL 1" },
+  homeroom: { nip: "197902142005012003", phone: "081290001112", subjects: "Wali Kelas X PPL 1" },
+  major_head: { nip: "197701102003121004", phone: "081290001113", subjects: "Kaprodi PPL" },
   teacher: { nip: "196801011990031001", phone: "081234567890", subjects: "PWPB, PBO" },
   student: { nip: "-", phone: "081290001114", subjects: "Siswa Aktif" },
   parent: { nip: "-", phone: "081290001115", subjects: "Orang Tua/Wali" },
