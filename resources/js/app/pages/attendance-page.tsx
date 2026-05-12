@@ -6,6 +6,15 @@ import { Button } from "../components/ui/button";
 import { CheckCircle, Clock, XCircle, FileText, Save, Loader2, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
+import { useAuth } from "../lib/auth";
+import {
+  getAllowedClassesForRole,
+  getDefaultClassForRole,
+  getTeacherScheduleByClass,
+  isClassAllowedForRole,
+  secretaryAssignment,
+  teacherScheduleToday,
+} from "../lib/role-scope";
 
 type AttendanceStatus = "hadir" | "telat" | "alpha" | "izin" | "sakit";
 
@@ -53,6 +62,10 @@ function formatDateForApi(date: Date) {
 }
 
 export function AttendancePage() {
+  const { user } = useAuth();
+  const role = user?.role;
+  const isSecretary = role === "secretary";
+  const isTeacher = role === "teacher";
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -90,9 +103,19 @@ export function AttendancePage() {
 
         setStudents(loadedStudents);
 
-        const firstClass = loadedStudents.find((student) => student.class)?.class;
+        const defaultClass = getDefaultClassForRole(role);
+        const firstAllowedClass = loadedStudents.find((student) =>
+          isClassAllowedForRole(student.class, role),
+        )?.class;
+        const firstClass = defaultClass || firstAllowedClass || loadedStudents.find((student) => student.class)?.class;
+
         if (firstClass) {
           setSelectedClass((currentClass) => currentClass || firstClass);
+        }
+
+        if (isSecretary) {
+          setSelectedSubject("Presensi awal hari");
+          setSelectedSession("1");
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -110,17 +133,34 @@ export function AttendancePage() {
     loadStudents();
 
     return () => controller.abort();
-  }, []);
+  }, [isSecretary, role]);
 
-  const classOptions = useMemo(
-    () => Array.from(new Set(students.map((student) => student.class))).sort(),
-    [students],
-  );
+  const classOptions = useMemo(() => {
+    const availableClasses = Array.from(new Set(students.map((student) => student.class))).sort();
+    const allowedClasses = getAllowedClassesForRole(role);
+
+    if (!allowedClasses) {
+      return availableClasses;
+    }
+
+    return allowedClasses.filter((className) => availableClasses.includes(className));
+  }, [role, students]);
 
   const visibleStudents = useMemo(
-    () => students.filter((student) => !selectedClass || student.class === selectedClass),
-    [selectedClass, students],
+    () => students.filter((student) => (!selectedClass || student.class === selectedClass) && isClassAllowedForRole(student.class, role)),
+    [role, selectedClass, students],
   );
+
+  const activeTeacherSchedule = isTeacher ? getTeacherScheduleByClass(selectedClass) : null;
+
+  useEffect(() => {
+    if (!activeTeacherSchedule) {
+      return;
+    }
+
+    setSelectedSubject((currentSubject) => currentSubject || activeTeacherSchedule.subject);
+    setSelectedSession((currentSession) => currentSession || activeTeacherSchedule.session);
+  }, [activeTeacherSchedule]);
 
   const today = new Date();
   const todayForApi = formatDateForApi(today);
@@ -142,7 +182,10 @@ export function AttendancePage() {
   };
 
   const handleSave = async () => {
-    if (!selectedClass || !selectedSubject || !selectedSession) {
+    const subjectForPayload = isSecretary ? "Presensi awal hari" : selectedSubject;
+    const sessionForPayload = isSecretary ? 1 : Number(selectedSession);
+
+    if (!selectedClass || !subjectForPayload || !sessionForPayload) {
       toast.error("Lengkapi kelas, mata pelajaran, dan jam pelajaran terlebih dahulu.");
       return;
     }
@@ -168,10 +211,13 @@ export function AttendancePage() {
             body: JSON.stringify({
               student_id: student.id,
               date: todayForApi,
-              lesson_hour: Number(selectedSession),
-              subject: selectedSubject,
+              lesson_hour: sessionForPayload,
+              subject: subjectForPayload,
               status: student.status,
               note: student.notes.trim() || null,
+              created_by: isSecretary
+                ? `${user?.name ?? "Sekretaris"} - Sekretaris ${secretaryAssignment.className}`
+                : `${user?.name ?? "Guru Mapel"} - Guru Mapel`,
             }),
           }),
         ),
@@ -194,7 +240,9 @@ export function AttendancePage() {
 
       setLastSaved(new Date());
       toast.success("Presensi berhasil disimpan!", {
-        description: `${attendanceRows.length} data presensi untuk ${selectedClass} telah tersimpan.`,
+        description: isSecretary
+          ? `${attendanceRows.length} data presensi awal hari ${selectedClass} tersimpan oleh ${user?.name}.`
+          : `${attendanceRows.length} data presensi ${subjectForPayload} untuk ${selectedClass} telah tersimpan.`,
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan presensi.");
@@ -230,55 +278,65 @@ export function AttendancePage() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
                   Kelas
                 </label>
-                <Select value={selectedClass} onValueChange={setSelectedClass} disabled={isLoadingStudents}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={isLoadingStudents ? "Memuat kelas..." : "Pilih Kelas"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classOptions.map((className) => (
-                      <SelectItem key={className} value={className}>
-                        {className}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isSecretary ? (
+                  <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center text-sm dark:bg-input dark:border-border dark:text-foreground">
+                    {secretaryAssignment.className}
+                  </div>
+                ) : (
+                  <Select value={selectedClass} onValueChange={setSelectedClass} disabled={isLoadingStudents}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isLoadingStudents ? "Memuat kelas..." : "Pilih Kelas"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map((className) => (
+                        <SelectItem key={className} value={className}>
+                          {className}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
-                  Mata Pelajaran
-                </label>
-                <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Mapel" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjectOptions.map((subject) => (
-                      <SelectItem key={subject} value={subject}>
-                        {subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isSecretary && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
+                    Mata Pelajaran
+                  </label>
+                  <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={activeTeacherSchedule ? activeTeacherSchedule.subject : "Pilih Mapel"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjectOptions.map((subject) => (
+                        <SelectItem key={subject} value={subject}>
+                          {subject}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
-                  Jam Ke-
-                </label>
-                <Select value={selectedSession} onValueChange={setSelectedSession}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Jam" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sessionOptions.map((session) => (
-                      <SelectItem key={session.value} value={session.value}>
-                        {session.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isSecretary && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
+                    Jam Ke-
+                  </label>
+                  <Select value={selectedSession} onValueChange={setSelectedSession}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={activeTeacherSchedule ? `Jam ${activeTeacherSchedule.session} (${activeTeacherSchedule.time})` : "Pilih Jam"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sessionOptions.map((session) => (
+                        <SelectItem key={session.value} value={session.value}>
+                          {session.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
@@ -294,6 +352,16 @@ export function AttendancePage() {
                 </div>
               </div>
             </div>
+            {isSecretary && (
+              <p className="mt-4 text-sm text-gray-600 dark:text-muted-foreground">
+                {secretaryAssignment.assignmentLabel}: {secretaryAssignment.assignedBy}. Presensi sekretaris hanya sekali untuk awal hari dan tercatat sebagai input kelas {secretaryAssignment.className}.
+              </p>
+            )}
+            {isTeacher && (
+              <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-100">
+                Jadwal hari ini: {teacherScheduleToday.map((item) => `${item.className} - ${item.subject} jam ${item.session}`).join(", ")}. Guru mapel boleh menambah catatan alpha jika siswa tidak ada saat pergantian mapel.
+              </div>
+            )}
           </CardContent>
         </Card>
 

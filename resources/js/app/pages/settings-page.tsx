@@ -45,6 +45,7 @@ export function SettingsPage() {
   };
 
   const activeRole = user?.role ?? "teacher";
+  const isAccessLimitedRole = activeRole === "secretary" || activeRole === "teacher";
   const profile = roleProfileMap[activeRole];
   const profileEmail = user?.email ?? "guru@demo.test";
   const profileName = user?.name ?? "Akun Demo";
@@ -56,10 +57,10 @@ export function SettingsPage() {
       
       <div className="w-full p-4 sm:p-6 lg:p-8">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={`grid w-full ${isAccessLimitedRole ? "grid-cols-3" : "grid-cols-4"}`}>
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="notifications">Notifikasi</TabsTrigger>
-            <TabsTrigger value="system">Sistem</TabsTrigger>
+            {!isAccessLimitedRole && <TabsTrigger value="system">Sistem</TabsTrigger>}
             <TabsTrigger value="security">Keamanan</TabsTrigger>
           </TabsList>
 
@@ -97,18 +98,24 @@ export function SettingsPage() {
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Role</label>
-                  <Select value={activeRole}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={roleLabel} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roleOptions.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
-                          {role.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {isAccessLimitedRole ? (
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                      {roleLabel}. Role tidak bisa diganti sendiri karena hak akses diberikan oleh wali kelas/admin.
+                    </div>
+                  ) : (
+                    <Select value={activeRole}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={roleLabel} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roleOptions.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div>
@@ -183,6 +190,7 @@ export function SettingsPage() {
           </TabsContent>
 
           {/* System Settings */}
+          {!isAccessLimitedRole && (
           <TabsContent value="system" className="space-y-6">
             <Card>
               <CardHeader>
@@ -252,6 +260,7 @@ export function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          )}
 
           {/* Security Settings */}
           <TabsContent value="security" className="space-y-6">

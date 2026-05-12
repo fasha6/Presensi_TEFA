@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Badge } from "../components/ui/badge";
 import { DemoRole, useAuth } from "../lib/auth";
+import { secretaryAssignment, teacherScheduleToday } from "../lib/role-scope";
 
 const attendanceTrendData = [
   { name: "Sen", hadir: 285, izin: 10, sakit: 5, alpha: 0 },
@@ -209,43 +210,43 @@ function ParentDashboard() {
 }
 
 function TeacherDashboard() {
+  const activeSchedule = teacherScheduleToday[0];
+
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Siswa Hari Ini"
-          value="300"
+          title={`Total Siswa Kelas ${activeSchedule.className}`}
+          value={`${activeSchedule.totalStudents}`}
           icon={Users}
           iconColor="bg-blue-100 text-blue-600"
         />
         <StatCard
           title="Hadir"
-          value="285"
-          subtitle="95%"
+          value={`${activeSchedule.present}`}
+          subtitle={`${Math.round((activeSchedule.present / activeSchedule.totalStudents) * 100)}%`}
           icon={CheckCircle}
           iconColor="bg-green-100 text-green-600"
         />
         <StatCard
           title="Terlambat"
-          value="8"
-          subtitle="2.7%"
+          value={`${activeSchedule.late}`}
+          subtitle="Perlu dicatat per jam mapel"
           icon={Clock}
           iconColor="bg-amber-100 text-amber-600"
         />
         <StatCard
           title="Tidak Hadir"
-          value="7"
-          subtitle="2.3%"
+          value={`${activeSchedule.absent}`}
+          subtitle="Kirim konfirmasi ke wali kelas"
           icon={XCircle}
           iconColor="bg-red-100 text-red-600"
         />
       </div>
 
-      {/* Quick Action */}
       <Card>
         <CardHeader>
-          <CardTitle>Mulai Presensi</CardTitle>
+          <CardTitle>Mulai Presensi Guru Mapel</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -253,22 +254,26 @@ function TeacherDashboard() {
               <div className="grid grid-cols-2 gap-3">
                 <Select>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih Kelas" />
+                    <SelectValue placeholder={`${activeSchedule.className} - ${activeSchedule.time}`} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="xii-rpl-1">XII RPL 1</SelectItem>
-                    <SelectItem value="xii-rpl-2">XII RPL 2</SelectItem>
-                    <SelectItem value="xi-rpl-1">XI RPL 1</SelectItem>
+                    {teacherScheduleToday.map((schedule) => (
+                      <SelectItem key={`${schedule.className}-${schedule.session}`} value={`${schedule.className}-${schedule.session}`}>
+                        {schedule.className} - Jam {schedule.session}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select>
                   <SelectTrigger>
-                    <SelectValue placeholder="Mata Pelajaran" />
+                    <SelectValue placeholder={activeSchedule.subject} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pwpb">PWPB</SelectItem>
-                    <SelectItem value="pbo">PBO</SelectItem>
-                    <SelectItem value="basdat">Basis Data</SelectItem>
+                    {Array.from(new Set(teacherScheduleToday.map((schedule) => schedule.subject))).map((subject) => (
+                      <SelectItem key={subject} value={subject.toLowerCase().replaceAll(" ", "-")}>
+                        {subject}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -280,18 +285,22 @@ function TeacherDashboard() {
         </CardContent>
       </Card>
 
-      {/* Schedule & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Jadwal Hari Ini</CardTitle>
+            <CardTitle>Jadwal Mengajar Hari Ini</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-              <ScheduleItem time="09:15 - 10:45" class="XII RPL 2" subject="PBO" status="current" />
-              <ScheduleItem time="11:00 - 12:30" class="XI RPL 1" subject="Basis Data" status="upcoming" />
-              <ScheduleItem time="13:00 - 14:30" class="XI RPL 2" subject="PWPB" status="upcoming" />
+              {teacherScheduleToday.map((schedule) => (
+                <ScheduleItem
+                  key={`${schedule.className}-${schedule.session}`}
+                  time={schedule.time}
+                  class={schedule.className}
+                  subject={schedule.subject}
+                  status={schedule.status}
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -303,18 +312,18 @@ function TeacherDashboard() {
           <CardContent>
             <div className="space-y-4">
               <ActivityItem
-                title="Presensi XII RPL 1 - PWPB"
-                description="30 siswa hadir, 2 izin"
+                title={`${activeSchedule.className} - ${activeSchedule.subject}`}
+                description={`${activeSchedule.present} hadir, ${activeSchedule.late} terlambat, ${activeSchedule.absent} tidak hadir`}
                 time="5 menit lalu"
               />
               <ActivityItem
-                title="Presensi XI RPL 2 - PBO"
-                description="28 siswa hadir, 1 sakit, 1 alpha"
+                title="Konfirmasi wali kelas"
+                description="Alpha saat pergantian mapel dikirim ke wali kelas"
                 time="1 jam lalu"
               />
               <ActivityItem
-                title="Presensi XII TKJ 1 - Jaringan"
-                description="32 siswa hadir"
+                title="Catatan guru mapel"
+                description="Guru bisa menambah absensi saat siswa tidak berada di kelas"
                 time="2 jam lalu"
               />
             </div>
@@ -330,24 +339,23 @@ function TeacherDashboard() {
 function SecretaryDashboard() {
   return (
     <div className="space-y-6">
-      <ScopeNotice title="Akses Sekretaris" description="Hanya kelas XII RPL 1. Fokus pada input presensi kelas dan pantauan alpha berulang." />
+      <ScopeNotice title="Akses Sekretaris" description={`Hanya kelas ${secretaryAssignment.className}. Hak akses diberikan oleh ${secretaryAssignment.assignedBy}. Presensi dilakukan sekali saat awal hari.`} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Siswa Kelas" value="36" icon={Users} iconColor="bg-blue-100 text-blue-600" />
         <StatCard title="Hadir Hari Ini" value="32" subtitle="88.9%" icon={CheckCircle} iconColor="bg-green-100 text-green-600" />
-        <StatCard title="Belum Diinput" value="1" subtitle="Jam pelajaran" icon={ClipboardCheck} iconColor="bg-amber-100 text-amber-600" />
+        <StatCard title="Status Input" value="1x" subtitle="Sekali di awal hari" icon={ClipboardCheck} iconColor="bg-amber-100 text-amber-600" />
         <StatCard title="Alpha Berulang" value="3" subtitle="Butuh follow-up" icon={AlertTriangle} iconColor="bg-red-100 text-red-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Presensi Kelas Hari Ini</CardTitle>
+            <CardTitle>Presensi Awal Hari</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-            <ScheduleItem time="09:15 - 10:45" class="XII RPL 1" subject="PBO" status="current" />
-            <ScheduleItem time="11:00 - 12:30" class="XII RPL 1" subject="Basis Data" status="upcoming" />
+            <ScheduleItem time="Awal hari" class={secretaryAssignment.className} subject="Presensi kelas" status="current" />
+            <p className="text-sm text-gray-600">Tidak memilih kelas, mapel, atau jam. Input tercatat sebagai sekretaris {secretaryAssignment.className}.</p>
             <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
               <a href="/presensi">Input Presensi Kelas</a>
             </Button>
