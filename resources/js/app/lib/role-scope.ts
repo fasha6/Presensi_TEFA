@@ -41,6 +41,13 @@ export const secretaryAssignment = {
   assignmentLabel: "Hak akses sekretaris kelas dari wali kelas",
 };
 
+export const homeroomAssignment = {
+  className: "X PPL 1",
+  major: "PPL",
+  assignedBy: "Operator Sekolah",
+  assignmentLabel: "Hak akses wali kelas dari operator",
+};
+
 export const teacherScheduleToday = [
   {
     className: "XI PPL 1",
@@ -78,8 +85,12 @@ export const teacherScheduleToday = [
 ] as const;
 
 export function getDefaultClassForRole(role?: DemoRole | null) {
-  if (role === "secretary" || role === "homeroom") {
+  if (role === "secretary") {
     return secretaryAssignment.className;
+  }
+
+  if (role === "homeroom") {
+    return homeroomAssignment.className;
   }
 
   if (role === "teacher") {
@@ -90,8 +101,12 @@ export function getDefaultClassForRole(role?: DemoRole | null) {
 }
 
 export function getAllowedClassesForRole(role?: DemoRole | null) {
-  if (role === "secretary" || role === "homeroom") {
+  if (role === "secretary") {
     return [secretaryAssignment.className];
+  }
+
+  if (role === "homeroom") {
+    return [homeroomAssignment.className];
   }
 
   if (role === "teacher") {

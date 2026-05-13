@@ -8,7 +8,7 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Search, Filter, Eye, TrendingUp, TrendingDown } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { getAllowedClassesForRole, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
+import { getAllowedClassesForRole, homeroomAssignment, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
 
 interface Student {
   id: number;
@@ -26,7 +26,9 @@ export function StudentsPage() {
   const { user } = useAuth();
   const role = user?.role;
   const isSecretary = role === "secretary";
+  const isHomeroom = role === "homeroom";
   const isTeacher = role === "teacher";
+  const hasLockedClass = isSecretary || isHomeroom;
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,8 +79,8 @@ export function StudentsPage() {
 
   const filteredStudents = roleScopedStudents.filter(student => {
     if (searchQuery && !student.name.toLowerCase().includes(searchQuery.toLowerCase()) && !student.nis.includes(searchQuery)) return false;
-    if (!isSecretary && filterClass !== "all" && !student.class.includes(filterClass)) return false;
-    if (!isSecretary && filterJurusan !== "all" && student.jurusan !== filterJurusan) return false;
+    if (!hasLockedClass && filterClass !== "all" && !student.class.includes(filterClass)) return false;
+    if (!hasLockedClass && filterJurusan !== "all" && student.jurusan !== filterJurusan) return false;
     if (filterRisk !== "all" && student.riskLevel !== filterRisk) return false;
     return true;
   });
@@ -165,7 +167,7 @@ export function StudentsPage() {
                 />
               </div>
 
-              {!isSecretary && (
+              {!hasLockedClass && (
                 <Select value={filterJurusan} onValueChange={setFilterJurusan}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Semua Jurusan" />
@@ -181,7 +183,7 @@ export function StudentsPage() {
                 </Select>
               )}
 
-              {!isSecretary && (
+              {!hasLockedClass && (
                 <Select value={filterClass} onValueChange={setFilterClass}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder={isTeacher ? "Kelas yang diajar" : "Semua Kelas"} />
@@ -211,6 +213,11 @@ export function StudentsPage() {
               {isSecretary && (
                 <Badge className="bg-blue-100 text-blue-700">
                   Kelas terkunci: {secretaryAssignment.className}
+                </Badge>
+              )}
+              {isHomeroom && (
+                <Badge className="bg-blue-100 text-blue-700">
+                  Kelas wali terkunci: {homeroomAssignment.className}
                 </Badge>
               )}
             </div>

@@ -55,7 +55,7 @@ export const demoUsers: DemoUser[] = [
     email: "wali@demo.test",
     password: "demo123",
     role: "homeroom",
-    roleLabel: "Wali Kelas",
+    roleLabel: "Wali Kelas X PPL 1",
   },
   {
     id: "major_head",

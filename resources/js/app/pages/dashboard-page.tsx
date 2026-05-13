@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Badge } from "../components/ui/badge";
 import { DemoRole, useAuth } from "../lib/auth";
-import { secretaryAssignment, teacherScheduleToday } from "../lib/role-scope";
+import { homeroomAssignment, secretaryAssignment, teacherScheduleToday } from "../lib/role-scope";
 import { Link } from "react-router";
 
 const attendanceTrendData = [
@@ -34,6 +34,21 @@ const statusDistribution = [
   { name: "Hadir", value: 285, color: "#16A34A" },
   { name: "Izin", value: 10, color: "#2563EB" },
   { name: "Sakit", value: 3, color: "#F59E0B" },
+  { name: "Alpha", value: 2, color: "#DC2626" },
+];
+
+const homeroomAttendanceTrendData = [
+  { name: "Sen", hadir: 32, izin: 1, sakit: 1, alpha: 2 },
+  { name: "Sel", hadir: 31, izin: 2, sakit: 1, alpha: 2 },
+  { name: "Rab", hadir: 34, izin: 1, sakit: 0, alpha: 1 },
+  { name: "Kam", hadir: 33, izin: 1, sakit: 1, alpha: 1 },
+  { name: "Jum", hadir: 30, izin: 2, sakit: 2, alpha: 2 },
+];
+
+const homeroomStatusDistribution = [
+  { name: "Hadir", value: 31, color: "#16A34A" },
+  { name: "Izin", value: 2, color: "#2563EB" },
+  { name: "Sakit", value: 1, color: "#A855F7" },
   { name: "Alpha", value: 2, color: "#DC2626" },
 ];
 
@@ -386,26 +401,33 @@ function SecretaryDashboard() {
 }
 
 function HomeroomDashboard() {
+  const totalStudents = homeroomStatusDistribution.reduce((total, item) => total + item.value, 0);
+  const presentToday = homeroomStatusDistribution.find((item) => item.name === "Hadir")?.value ?? 0;
+  const attendancePercentage = Math.round((presentToday / totalStudents) * 100);
+
   return (
     <div className="space-y-6">
+      <ScopeNotice title="Akses Wali Kelas" description={`Kelas binaan terkunci di ${homeroomAssignment.className}. Wali kelas memantau presensi dan pembinaan, bukan menginput absen.`} />
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Persentase Kehadiran"
-          value="94.5%"
+          title={`Kehadiran ${homeroomAssignment.className}`}
+          value={`${attendancePercentage}%`}
+          subtitle={`${presentToday}/${totalStudents} siswa hadir hari ini`}
           icon={TrendingUp}
           iconColor="bg-green-100 text-green-600"
-          trend="+2.3%"
         />
         <StatCard
-          title="Total Siswa"
-          value="36"
+          title="Total Siswa Kelas"
+          value={`${totalStudents}`}
           icon={Users}
           iconColor="bg-blue-100 text-blue-600"
         />
         <StatCard
-          title="Pelanggaran Bulan Ini"
-          value="12"
+          title="Perlu Perhatian"
+          value="3"
+          subtitle="Alpha/izin/sakit berulang"
           icon={AlertTriangle}
           iconColor="bg-amber-100 text-amber-600"
         />
@@ -425,14 +447,15 @@ function HomeroomDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={attendanceTrendData}>
+              <LineChart data={homeroomAttendanceTrendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" />
-                <YAxis stroke="#64748B" />
+                <YAxis stroke="#64748B" domain={[0, totalStudents]} />
                 <Tooltip />
                 <Legend />
                 <Line type="monotone" dataKey="hadir" stroke="#16A34A" strokeWidth={2} />
                 <Line type="monotone" dataKey="izin" stroke="#2563EB" strokeWidth={2} />
+                <Line type="monotone" dataKey="sakit" stroke="#A855F7" strokeWidth={2} />
                 <Line type="monotone" dataKey="alpha" stroke="#DC2626" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
@@ -447,7 +470,7 @@ function HomeroomDashboard() {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={statusDistribution}
+                  data={homeroomStatusDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -456,7 +479,7 @@ function HomeroomDashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusDistribution.map((entry, index) => (
+                  {homeroomStatusDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -474,9 +497,9 @@ function HomeroomDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <AlertStudent name="Ahmad Rizki Maulana" absences={5} violations={2} />
-            <AlertStudent name="Siti Nurhaliza" absences={4} violations={1} />
-            <AlertStudent name="Budi Santoso" absences={3} violations={0} />
+            <AlertStudent id={1} name="Ahmad Rizki Maulana" absences={5} violations={2} />
+            <AlertStudent id={9} name="Irfan Hakim" absences={4} violations={1} />
+            <AlertStudent id={11} name="Kurnia Aji" absences={3} violations={0} />
           </div>
         </CardContent>
       </Card>
@@ -881,7 +904,7 @@ function ActivityItem({ title, description, time }: any) {
   );
 }
 
-function AlertStudent({ name, absences, violations }: any) {
+function AlertStudent({ id, name, absences, violations }: any) {
   return (
     <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-400/10 dark:border-red-400/30">
       <div>
@@ -890,7 +913,9 @@ function AlertStudent({ name, absences, violations }: any) {
           {absences}x tidak hadir • {violations} pelanggaran
         </p>
       </div>
-      <Button variant="outline" size="sm">Detail</Button>
+      <Button asChild variant="outline" size="sm">
+        <Link to={`/siswa/${id ?? 1}`}>Detail</Link>
+      </Button>
     </div>
   );
 }

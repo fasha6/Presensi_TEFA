@@ -9,7 +9,8 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { FileText, Plus, Filter, Eye, CheckCircle, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { schoolMajors } from "../lib/role-scope";
+import { useAuth } from "../lib/auth";
+import { homeroomAssignment, isClassAllowedForRole, schoolMajors } from "../lib/role-scope";
 
 interface SPRecord {
   id: number;
@@ -27,6 +28,8 @@ interface SPRecord {
 
 
 export function SPManagementPage() {
+  const { user } = useAuth();
+  const isHomeroom = user?.role === "homeroom";
   const [records, setRecords] = useState<SPRecord[]>([]);
   const [filterClass, setFilterClass] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -46,19 +49,21 @@ export function SPManagementPage() {
     refreshSPRecords();
   }, []);
 
-  const filteredRecords = records.filter(record => {
+  const roleScopedRecords = records.filter((record) => isClassAllowedForRole(record.class, user?.role));
+
+  const filteredRecords = roleScopedRecords.filter(record => {
     if (filterClass !== "all" && !record.class.includes(filterClass)) return false;
     if (filterStatus !== "all" && record.status !== filterStatus) return false;
     return true;
   });
 
   const stats = {
-    total: records.length,
-    active: records.filter(r => r.status === "active").length,
-    completed: records.filter(r => r.status === "completed").length,
-    sp1: records.filter(r => r.type === "SP 1").length,
-    sp2: records.filter(r => r.type === "SP 2").length,
-    sp3: records.filter(r => r.type === "SP 3").length,
+    total: roleScopedRecords.length,
+    active: roleScopedRecords.filter(r => r.status === "active").length,
+    completed: roleScopedRecords.filter(r => r.status === "completed").length,
+    sp1: roleScopedRecords.filter(r => r.type === "SP 1").length,
+    sp2: roleScopedRecords.filter(r => r.type === "SP 2").length,
+    sp3: roleScopedRecords.filter(r => r.type === "SP 3").length,
   };
 
   return (
@@ -66,6 +71,14 @@ export function SPManagementPage() {
       <Header title="SP & Pembinaan" breadcrumbs={["SP & Pembinaan"]} />
       
       <div className="p-8 max-w-[1280px]">
+        {isHomeroom && (
+          <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-400/40 dark:bg-blue-400/10">
+            <CardContent className="pt-6 text-sm text-blue-900 dark:text-blue-100">
+              Wali kelas hanya melihat dan menangani data SP/pembinaan kelas {homeroomAssignment.className}. Pilihan kelas dikunci oleh operator.
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <Card>
@@ -142,19 +155,25 @@ export function SPManagementPage() {
                   <Filter className="w-5 h-5 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">Filter:</span>
                 </div>
-                <Select value={filterClass} onValueChange={setFilterClass}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Semua Kelas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Kelas</SelectItem>
-                    {schoolMajors.map((major) => (
-                      <SelectItem key={major} value={major}>
-                        {major}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isHomeroom ? (
+                  <Badge className="bg-blue-100 text-blue-700">
+                    Kelas wali: {homeroomAssignment.className}
+                  </Badge>
+                ) : (
+                  <Select value={filterClass} onValueChange={setFilterClass}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Semua Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Kelas</SelectItem>
+                      {schoolMajors.map((major) => (
+                        <SelectItem key={major} value={major}>
+                          {major}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Semua Status" />
@@ -179,6 +198,7 @@ export function SPManagementPage() {
                     <DialogTitle>Terbitkan Surat Peringatan Baru</DialogTitle>
                   </DialogHeader>
                   <NewSPForm
+                    lockedClass={isHomeroom ? homeroomAssignment.className : null}
                     onCancel={() => setIsCreateOpen(false)}
                     onSubmitSuccess={() => {
                       setIsCreateOpen(false);
@@ -314,7 +334,7 @@ function mapWarningLetterToSPRecord(wl: any): SPRecord {
     id: wl.id,
     number: wl.letter_number || wl.number || `SP-${wl.id}`,
     studentName: wl.student_name || wl.student?.name || wl.name || "-",
-    class: wl.class || wl.student?.class_name || "-",
+    class: wl.class || wl.student?.class || wl.student?.class_name || "-",
     type: wl.type || wl.sp_type || "SP 1",
     reason: wl.reason || "-",
     date: wl.date || wl.created_at || new Date().toISOString(),
@@ -325,9 +345,11 @@ function mapWarningLetterToSPRecord(wl: any): SPRecord {
 }
 
 function NewSPForm({
+  lockedClass,
   onCancel,
   onSubmitSuccess,
 }: {
+  lockedClass?: string | null;
   onCancel: () => void;
   onSubmitSuccess: () => void;
 }) {
@@ -347,12 +369,11 @@ function NewSPForm({
     .then((res) => res.json())
     .then((data) => {
       // Jika API return { data: [...] }
-      if (Array.isArray(data)) setStudents(data);
-      else if (Array.isArray(data.data)) setStudents(data.data);
-      else setStudents([]);
+      const loadedStudents = Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
+      setStudents(lockedClass ? loadedStudents.filter((student: any) => student.class === lockedClass) : loadedStudents);
     })
     .catch(() => setStudents([]));
-}, []);
+}, [lockedClass]);
 
   useEffect(() => {
     const selected = students.find((s) => String(s.id) === String(studentId));
@@ -405,7 +426,7 @@ function NewSPForm({
           >
             <option value="">Pilih siswa...</option>
             {students.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
+              <option key={s.id} value={s.id}>{s.name} - {s.class}</option>
             ))}
           </select>
         </div>

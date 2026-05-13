@@ -45,7 +45,7 @@ export function SettingsPage() {
   };
 
   const activeRole = user?.role ?? "teacher";
-  const isAccessLimitedRole = activeRole === "secretary" || activeRole === "teacher";
+  const isAccessLimitedRole = activeRole === "secretary" || activeRole === "teacher" || activeRole === "homeroom";
   const profile = roleProfileMap[activeRole];
   const profileEmail = user?.email ?? "guru@demo.test";
   const profileName = user?.name ?? "Akun Demo";

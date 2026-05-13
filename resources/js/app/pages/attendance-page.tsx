@@ -11,6 +11,7 @@ import {
   getAllowedClassesForRole,
   getDefaultClassForRole,
   getTeacherScheduleByClass,
+  homeroomAssignment,
   isClassAllowedForRole,
   secretaryAssignment,
   teacherScheduleToday,
@@ -65,7 +66,9 @@ export function AttendancePage() {
   const { user } = useAuth();
   const role = user?.role;
   const isSecretary = role === "secretary";
+  const isHomeroom = role === "homeroom";
   const isTeacher = role === "teacher";
+  const canEditAttendance = !isHomeroom;
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -182,6 +185,11 @@ export function AttendancePage() {
   };
 
   const handleSave = async () => {
+    if (isHomeroom) {
+      toast.error("Wali kelas hanya bisa melihat presensi kelas binaan.");
+      return;
+    }
+
     const subjectForPayload = isSecretary ? "Presensi awal hari" : selectedSubject;
     const sessionForPayload = isSecretary ? 1 : Number(selectedSession);
 
@@ -278,9 +286,9 @@ export function AttendancePage() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
                   Kelas
                 </label>
-                {isSecretary ? (
+                {isSecretary || isHomeroom ? (
                   <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center text-sm dark:bg-input dark:border-border dark:text-foreground">
-                    {secretaryAssignment.className}
+                    {isSecretary ? secretaryAssignment.className : homeroomAssignment.className}
                   </div>
                 ) : (
                   <Select value={selectedClass} onValueChange={setSelectedClass} disabled={isLoadingStudents}>
@@ -298,7 +306,7 @@ export function AttendancePage() {
                 )}
               </div>
 
-              {!isSecretary && (
+              {!isSecretary && !isHomeroom && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
                     Mata Pelajaran
@@ -318,7 +326,7 @@ export function AttendancePage() {
                 </div>
               )}
 
-              {!isSecretary && (
+              {!isSecretary && !isHomeroom && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block dark:text-foreground">
                     Jam Ke-
@@ -360,6 +368,11 @@ export function AttendancePage() {
             {isTeacher && (
               <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-100">
                 Jadwal hari ini: {teacherScheduleToday.map((item) => `${item.className} - ${item.subject} jam ${item.session}`).join(", ")}. Guru mapel boleh menambah catatan alpha jika siswa tidak ada saat pergantian mapel.
+              </div>
+            )}
+            {isHomeroom && (
+              <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-100">
+                {homeroomAssignment.assignmentLabel}: {homeroomAssignment.assignedBy}. Wali kelas hanya melihat presensi kelas {homeroomAssignment.className}, tidak memilih mapel, jam, atau menyimpan absen.
               </div>
             )}
           </CardContent>
@@ -412,7 +425,7 @@ export function AttendancePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-2">
-                          {statusOptions.map((option) => (
+                          {canEditAttendance ? statusOptions.map((option) => (
                             <StatusButton
                               key={option.status}
                               label={option.label}
@@ -421,16 +434,24 @@ export function AttendancePage() {
                               isActive={student.status === option.status}
                               onClick={() => updateStatus(student.id, option.status)}
                             />
-                          ))}
+                          )) : (
+                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 dark:bg-slate-700 dark:text-slate-100">
+                              Belum ada data presensi hari ini
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <input
-                          value={student.notes}
-                          onChange={(event) => updateNotes(student.id, event.target.value)}
-                          placeholder="Opsional"
-                          className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-[#1E3A8A] dark:border-border dark:bg-input dark:text-foreground"
-                        />
+                        {canEditAttendance ? (
+                          <input
+                            value={student.notes}
+                            onChange={(event) => updateNotes(student.id, event.target.value)}
+                            placeholder="Opsional"
+                            className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-[#1E3A8A] dark:border-border dark:bg-input dark:text-foreground"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-500 dark:text-muted-foreground">Mode lihat saja</span>
+                        )}
                       </td>
                     </motion.tr>
                   ))}
@@ -481,7 +502,7 @@ export function AttendancePage() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
-                {statusOptions.map((option) => (
+                {canEditAttendance ? statusOptions.map((option) => (
                   <StatusButton
                     key={option.status}
                     label={option.label}
@@ -491,20 +512,28 @@ export function AttendancePage() {
                     onClick={() => updateStatus(student.id, option.status)}
                     className="justify-center"
                   />
-                ))}
+                )) : (
+                  <div className="col-span-2 rounded-lg bg-gray-100 px-3 py-2 text-center text-sm text-gray-700 dark:bg-slate-700 dark:text-slate-100">
+                    Belum ada data presensi hari ini
+                  </div>
+                )}
               </div>
 
-              <input
-                value={student.notes}
-                onChange={(event) => updateNotes(student.id, event.target.value)}
-                placeholder="Catatan opsional"
-                className="mt-3 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-[#1E3A8A] dark:border-border dark:bg-input dark:text-foreground"
-              />
+              {canEditAttendance ? (
+                <input
+                  value={student.notes}
+                  onChange={(event) => updateNotes(student.id, event.target.value)}
+                  placeholder="Catatan opsional"
+                  className="mt-3 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-[#1E3A8A] dark:border-border dark:bg-input dark:text-foreground"
+                />
+              ) : (
+                <p className="mt-3 text-sm text-gray-500 dark:text-muted-foreground">Wali kelas tidak menginput catatan presensi dari halaman ini.</p>
+              )}
             </motion.div>
           ))}
         </div>
 
-        <motion.div
+        {canEditAttendance && <motion.div
           className="fixed inset-x-0 bottom-0 z-50 p-4 sm:inset-x-auto sm:bottom-8 sm:right-8"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -535,7 +564,7 @@ export function AttendancePage() {
               )}
             </Button>
           </div>
-        </motion.div>
+        </motion.div>}
       </div>
     </div>
   );
