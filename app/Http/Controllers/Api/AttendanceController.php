@@ -30,11 +30,12 @@ class AttendanceController extends Controller
             'subject' => ['required', 'string', 'max:255'],
             'status' => ['required', 'in:hadir,telat,alpha,izin,sakit'],
             'note' => ['nullable', 'string'],
+            'created_by' => ['nullable', 'string', 'max:255'],
         ]);
 
         $attendance = Attendance::query()->create([
             ...$validated,
-            'created_by' => 'demo-user',
+            'created_by' => $validated['created_by'] ?? 'demo-user',
         ]);
 
         return response()->json(

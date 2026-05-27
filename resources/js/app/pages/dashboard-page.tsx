@@ -6,6 +6,8 @@ import { Button } from "../components/ui/button";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Badge } from "../components/ui/badge";
 import { DemoRole, useAuth } from "../lib/auth";
+import { homeroomAssignment, secretaryAssignment, teacherScheduleToday } from "../lib/role-scope";
+import { Link } from "react-router";
 
 const attendanceTrendData = [
   { name: "Sen", hadir: 285, izin: 10, sakit: 5, alpha: 0 },
@@ -16,16 +18,37 @@ const attendanceTrendData = [
 ];
 
 const jurusanData = [
-  { name: "RPL", percentage: 95 },
-  { name: "TKJ", percentage: 92 },
-  { name: "MM", percentage: 88 },
-  { name: "OTKP", percentage: 90 },
+  { name: "AKL", percentage: 93 },
+  { name: "PM", percentage: 90 },
+  { name: "MPL", percentage: 92 },
+  { name: "TLG", percentage: 88 },
+  { name: "TKF", percentage: 91 },
+  { name: "TLM", percentage: 89 },
+  { name: "DKV", percentage: 94 },
+  { name: "TET", percentage: 87 },
+  { name: "PPL", percentage: 95 },
+  { name: "TJK", percentage: 92 },
 ];
 
 const statusDistribution = [
   { name: "Hadir", value: 285, color: "#16A34A" },
   { name: "Izin", value: 10, color: "#2563EB" },
   { name: "Sakit", value: 3, color: "#F59E0B" },
+  { name: "Alpha", value: 2, color: "#DC2626" },
+];
+
+const homeroomAttendanceTrendData = [
+  { name: "Sen", hadir: 32, izin: 1, sakit: 1, alpha: 2 },
+  { name: "Sel", hadir: 31, izin: 2, sakit: 1, alpha: 2 },
+  { name: "Rab", hadir: 34, izin: 1, sakit: 0, alpha: 1 },
+  { name: "Kam", hadir: 33, izin: 1, sakit: 1, alpha: 1 },
+  { name: "Jum", hadir: 30, izin: 2, sakit: 2, alpha: 2 },
+];
+
+const homeroomStatusDistribution = [
+  { name: "Hadir", value: 31, color: "#16A34A" },
+  { name: "Izin", value: 2, color: "#2563EB" },
+  { name: "Sakit", value: 1, color: "#A855F7" },
   { name: "Alpha", value: 2, color: "#DC2626" },
 ];
 
@@ -126,7 +149,7 @@ function StudentDashboard() {
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-gray-600">Kelas</span>
-              <span className="font-medium">XII RPL 1</span>
+              <span className="font-medium">X PPL 1</span>
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-gray-600">NIS</span>
@@ -144,9 +167,9 @@ function StudentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-              <ScheduleItem time="09:15 - 10:45" class="XII RPL 1" subject="PBO" status="current" />
-              <ScheduleItem time="11:00 - 12:30" class="XII RPL 1" subject="Basis Data" status="upcoming" />
+              <ScheduleItem time="07:30 - 09:00" class="X PPL 1" subject="PWPB" status="completed" />
+              <ScheduleItem time="09:15 - 10:45" class="X PPL 1" subject="PBO" status="current" />
+              <ScheduleItem time="11:00 - 12:30" class="X PPL 1" subject="Basis Data" status="upcoming" />
             </div>
           </CardContent>
         </Card>
@@ -193,7 +216,7 @@ function ParentDashboard() {
           </div>
           <div className="flex justify-between border-b pb-3">
             <span className="text-gray-600">Kelas</span>
-            <span className="font-medium">XII RPL 1</span>
+            <span className="font-medium">X PPL 1</span>
           </div>
           <div className="flex justify-between border-b pb-3">
             <span className="text-gray-600">Status Terakhir</span>
@@ -209,43 +232,43 @@ function ParentDashboard() {
 }
 
 function TeacherDashboard() {
+  const activeSchedule = teacherScheduleToday[0];
+
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Siswa Hari Ini"
-          value="300"
+          title={`Total Siswa Kelas ${activeSchedule.className}`}
+          value={`${activeSchedule.totalStudents}`}
           icon={Users}
           iconColor="bg-blue-100 text-blue-600"
         />
         <StatCard
           title="Hadir"
-          value="285"
-          subtitle="95%"
+          value={`${activeSchedule.present}`}
+          subtitle={`${Math.round((activeSchedule.present / activeSchedule.totalStudents) * 100)}%`}
           icon={CheckCircle}
           iconColor="bg-green-100 text-green-600"
         />
         <StatCard
           title="Terlambat"
-          value="8"
-          subtitle="2.7%"
+          value={`${activeSchedule.late}`}
+          subtitle="Perlu dicatat per jam mapel"
           icon={Clock}
           iconColor="bg-amber-100 text-amber-600"
         />
         <StatCard
           title="Tidak Hadir"
-          value="7"
-          subtitle="2.3%"
+          value={`${activeSchedule.absent}`}
+          subtitle="Kirim konfirmasi ke wali kelas"
           icon={XCircle}
           iconColor="bg-red-100 text-red-600"
         />
       </div>
 
-      {/* Quick Action */}
       <Card>
         <CardHeader>
-          <CardTitle>Mulai Presensi</CardTitle>
+          <CardTitle>Mulai Presensi Guru Mapel</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -253,45 +276,53 @@ function TeacherDashboard() {
               <div className="grid grid-cols-2 gap-3">
                 <Select>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih Kelas" />
+                    <SelectValue placeholder={`${activeSchedule.className} - ${activeSchedule.time}`} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="xii-rpl-1">XII RPL 1</SelectItem>
-                    <SelectItem value="xii-rpl-2">XII RPL 2</SelectItem>
-                    <SelectItem value="xi-rpl-1">XI RPL 1</SelectItem>
+                    {teacherScheduleToday.map((schedule) => (
+                      <SelectItem key={`${schedule.className}-${schedule.session}`} value={`${schedule.className}-${schedule.session}`}>
+                        {schedule.className} - Jam {schedule.session}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select>
                   <SelectTrigger>
-                    <SelectValue placeholder="Mata Pelajaran" />
+                    <SelectValue placeholder={activeSchedule.subject} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pwpb">PWPB</SelectItem>
-                    <SelectItem value="pbo">PBO</SelectItem>
-                    <SelectItem value="basdat">Basis Data</SelectItem>
+                    {Array.from(new Set(teacherScheduleToday.map((schedule) => schedule.subject))).map((subject) => (
+                      <SelectItem key={subject} value={subject.toLowerCase().replaceAll(" ", "-")}>
+                        {subject}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Button className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
-                Mulai Input Presensi
+              <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                <Link to="/presensi">Mulai Input Presensi</Link>
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Schedule & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Jadwal Hari Ini</CardTitle>
+            <CardTitle>Jadwal Mengajar Hari Ini</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-              <ScheduleItem time="09:15 - 10:45" class="XII RPL 2" subject="PBO" status="current" />
-              <ScheduleItem time="11:00 - 12:30" class="XI RPL 1" subject="Basis Data" status="upcoming" />
-              <ScheduleItem time="13:00 - 14:30" class="XI RPL 2" subject="PWPB" status="upcoming" />
+              {teacherScheduleToday.map((schedule) => (
+                <ScheduleItem
+                  key={`${schedule.className}-${schedule.session}`}
+                  time={schedule.time}
+                  class={schedule.className}
+                  subject={schedule.subject}
+                  status={schedule.status}
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -303,18 +334,18 @@ function TeacherDashboard() {
           <CardContent>
             <div className="space-y-4">
               <ActivityItem
-                title="Presensi XII RPL 1 - PWPB"
-                description="30 siswa hadir, 2 izin"
+                title={`${activeSchedule.className} - ${activeSchedule.subject}`}
+                description={`${activeSchedule.present} hadir, ${activeSchedule.late} terlambat, ${activeSchedule.absent} tidak hadir`}
                 time="5 menit lalu"
               />
               <ActivityItem
-                title="Presensi XI RPL 2 - PBO"
-                description="28 siswa hadir, 1 sakit, 1 alpha"
+                title="Konfirmasi wali kelas"
+                description="Alpha saat pergantian mapel dikirim ke wali kelas"
                 time="1 jam lalu"
               />
               <ActivityItem
-                title="Presensi XII TKJ 1 - Jaringan"
-                description="32 siswa hadir"
+                title="Catatan guru mapel"
+                description="Guru bisa menambah absensi saat siswa tidak berada di kelas"
                 time="2 jam lalu"
               />
             </div>
@@ -330,26 +361,25 @@ function TeacherDashboard() {
 function SecretaryDashboard() {
   return (
     <div className="space-y-6">
-      <ScopeNotice title="Akses Sekretaris" description="Hanya kelas XII RPL 1. Fokus pada input presensi kelas dan pantauan alpha berulang." />
+      <ScopeNotice title="Akses Sekretaris" description={`Hanya kelas ${secretaryAssignment.className}. Hak akses diberikan oleh ${secretaryAssignment.assignedBy}. Presensi dilakukan sekali saat awal hari.`} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Siswa Kelas" value="36" icon={Users} iconColor="bg-blue-100 text-blue-600" />
         <StatCard title="Hadir Hari Ini" value="32" subtitle="88.9%" icon={CheckCircle} iconColor="bg-green-100 text-green-600" />
-        <StatCard title="Belum Diinput" value="1" subtitle="Jam pelajaran" icon={ClipboardCheck} iconColor="bg-amber-100 text-amber-600" />
+        <StatCard title="Status Input" value="1x" subtitle="Sekali di awal hari" icon={ClipboardCheck} iconColor="bg-amber-100 text-amber-600" />
         <StatCard title="Alpha Berulang" value="3" subtitle="Butuh follow-up" icon={AlertTriangle} iconColor="bg-red-100 text-red-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Presensi Kelas Hari Ini</CardTitle>
+            <CardTitle>Presensi Awal Hari</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <ScheduleItem time="07:30 - 09:00" class="XII RPL 1" subject="PWPB" status="completed" />
-            <ScheduleItem time="09:15 - 10:45" class="XII RPL 1" subject="PBO" status="current" />
-            <ScheduleItem time="11:00 - 12:30" class="XII RPL 1" subject="Basis Data" status="upcoming" />
+            <ScheduleItem time="Awal hari" class={secretaryAssignment.className} subject="Presensi kelas" status="current" />
+            <p className="text-sm text-gray-600">Tidak memilih kelas, mapel, atau jam. Input tercatat sebagai sekretaris {secretaryAssignment.className}.</p>
             <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
-              <a href="/presensi">Input Presensi Kelas</a>
+              <Link to="/presensi">Input Presensi Kelas</Link>
             </Button>
           </CardContent>
         </Card>
@@ -371,26 +401,33 @@ function SecretaryDashboard() {
 }
 
 function HomeroomDashboard() {
+  const totalStudents = homeroomStatusDistribution.reduce((total, item) => total + item.value, 0);
+  const presentToday = homeroomStatusDistribution.find((item) => item.name === "Hadir")?.value ?? 0;
+  const attendancePercentage = Math.round((presentToday / totalStudents) * 100);
+
   return (
     <div className="space-y-6">
+      <ScopeNotice title="Akses Wali Kelas" description={`Kelas binaan terkunci di ${homeroomAssignment.className}. Wali kelas memantau presensi dan pembinaan, bukan menginput absen.`} />
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Persentase Kehadiran"
-          value="94.5%"
+          title={`Kehadiran ${homeroomAssignment.className}`}
+          value={`${attendancePercentage}%`}
+          subtitle={`${presentToday}/${totalStudents} siswa hadir hari ini`}
           icon={TrendingUp}
           iconColor="bg-green-100 text-green-600"
-          trend="+2.3%"
         />
         <StatCard
-          title="Total Siswa"
-          value="36"
+          title="Total Siswa Kelas"
+          value={`${totalStudents}`}
           icon={Users}
           iconColor="bg-blue-100 text-blue-600"
         />
         <StatCard
-          title="Pelanggaran Bulan Ini"
-          value="12"
+          title="Perlu Perhatian"
+          value="3"
+          subtitle="Alpha/izin/sakit berulang"
           icon={AlertTriangle}
           iconColor="bg-amber-100 text-amber-600"
         />
@@ -410,14 +447,15 @@ function HomeroomDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={attendanceTrendData}>
+              <LineChart data={homeroomAttendanceTrendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" />
-                <YAxis stroke="#64748B" />
+                <YAxis stroke="#64748B" domain={[0, totalStudents]} />
                 <Tooltip />
                 <Legend />
                 <Line type="monotone" dataKey="hadir" stroke="#16A34A" strokeWidth={2} />
                 <Line type="monotone" dataKey="izin" stroke="#2563EB" strokeWidth={2} />
+                <Line type="monotone" dataKey="sakit" stroke="#A855F7" strokeWidth={2} />
                 <Line type="monotone" dataKey="alpha" stroke="#DC2626" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
@@ -432,7 +470,7 @@ function HomeroomDashboard() {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={statusDistribution}
+                  data={homeroomStatusDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -441,7 +479,7 @@ function HomeroomDashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusDistribution.map((entry, index) => (
+                  {homeroomStatusDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -459,9 +497,9 @@ function HomeroomDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <AlertStudent name="Ahmad Rizki Maulana" absences={5} violations={2} />
-            <AlertStudent name="Siti Nurhaliza" absences={4} violations={1} />
-            <AlertStudent name="Budi Santoso" absences={3} violations={0} />
+            <AlertStudent id={1} name="Ahmad Rizki Maulana" absences={5} violations={2} />
+            <AlertStudent id={9} name="Irfan Hakim" absences={4} violations={1} />
+            <AlertStudent id={11} name="Kurnia Aji" absences={3} violations={0} />
           </div>
         </CardContent>
       </Card>
@@ -531,9 +569,9 @@ function BKDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <RiskStudent name="Ahmad Rizki Maulana" class="XII RPL 1" violations={8} sp={2} level="high" />
-            <RiskStudent name="Dedi Kurniawan" class="XI TKJ 2" violations={6} sp={1} level="high" />
-            <RiskStudent name="Rina Amelia" class="XII MM 1" violations={5} sp={1} level="medium" />
+            <RiskStudent name="Ahmad Rizki Maulana" class="X PPL 1" violations={8} sp={2} level="high" />
+            <RiskStudent name="Dedi Kurniawan" class="XII TJK 3" violations={6} sp={1} level="high" />
+            <RiskStudent name="Rina Amelia" class="XI MPL 2" violations={5} sp={1} level="medium" />
           </div>
         </CardContent>
       </Card>
@@ -634,11 +672,11 @@ function PrincipalDashboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Kelas Terbaik</span>
-                <span className="font-semibold">XII RPL 1</span>
+                <span className="font-semibold">X PPL 1</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Jurusan Terbaik</span>
-                <span className="font-semibold">RPL (95%)</span>
+                <span className="font-semibold">PPL (95%)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">SP Terselesaikan</span>
@@ -655,26 +693,28 @@ function PrincipalDashboard() {
 function MajorHeadDashboard() {
   return (
     <div className="space-y-6">
-      <ScopeNotice title="Akses Kaprodi" description="Rekap jurusan RPL. Tidak menginput presensi langsung, fokus evaluasi kelas dan tren jurusan." />
+      <ScopeNotice title="Akses Kaprodi" description="Rekap jurusan PPL. Tidak menginput presensi langsung, fokus evaluasi kelas dan tren jurusan." />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Siswa RPL" value="432" icon={Users} iconColor="bg-blue-100 text-blue-600" />
-        <StatCard title="Kehadiran RPL" value="95%" icon={TrendingUp} iconColor="bg-green-100 text-green-600" trend="+1.8%" />
+        <StatCard title="Siswa PPL" value="216" icon={Users} iconColor="bg-blue-100 text-blue-600" />
+        <StatCard title="Kehadiran PPL" value="95%" icon={TrendingUp} iconColor="bg-green-100 text-green-600" trend="+1.8%" />
         <StatCard title="Kelas Perlu Perhatian" value="2" icon={AlertTriangle} iconColor="bg-amber-100 text-amber-600" />
         <StatCard title="SP Aktif" value="6" icon={FileText} iconColor="bg-red-100 text-red-600" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Perbandingan Kehadiran Kelas RPL</CardTitle>
+          <CardTitle>Perbandingan Kehadiran Kelas PPL</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={[
-              { name: "X RPL 1", percentage: 96 },
-              { name: "XI RPL 1", percentage: 92 },
-              { name: "XII RPL 1", percentage: 95 },
-              { name: "XII RPL 2", percentage: 89 },
+              { name: "X PPL 1", percentage: 96 },
+              { name: "X PPL 2", percentage: 93 },
+              { name: "XI PPL 1", percentage: 92 },
+              { name: "XI PPL 2", percentage: 89 },
+              { name: "XII PPL 1", percentage: 95 },
+              { name: "XII PPL 2", percentage: 91 },
             ]}>
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
               <XAxis dataKey="name" stroke={chartTextColor} />
@@ -786,7 +826,7 @@ function ScopeNotice({ title, description }: { title: string; description: strin
 function AuditLogPanel() {
   const logs = [
     { actor: "Pak Budi", action: "mengubah status Ahmad", from: "Alpha", to: "Izin", time: "10:18", reason: "Surat izin diterima" },
-    { actor: "Nadia Putri", action: "menginput presensi XII RPL 1", from: "-", to: "Jam 2 selesai", time: "09:42", reason: "Input sekretaris kelas" },
+    { actor: "Nadia Putri", action: "menginput presensi X PPL 1", from: "-", to: "Awal hari selesai", time: "09:42", reason: "Input sekretaris kelas" },
     { actor: "Bu Rina", action: "menerbitkan SP 1", from: "Review", to: "Aktif", time: "08:55", reason: "Alpha berulang" },
   ];
 
@@ -864,7 +904,7 @@ function ActivityItem({ title, description, time }: any) {
   );
 }
 
-function AlertStudent({ name, absences, violations }: any) {
+function AlertStudent({ id, name, absences, violations }: any) {
   return (
     <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-400/10 dark:border-red-400/30">
       <div>
@@ -873,7 +913,9 @@ function AlertStudent({ name, absences, violations }: any) {
           {absences}x tidak hadir • {violations} pelanggaran
         </p>
       </div>
-      <Button variant="outline" size="sm">Detail</Button>
+      <Button asChild variant="outline" size="sm">
+        <Link to={`/siswa/${id ?? 1}`}>Detail</Link>
+      </Button>
     </div>
   );
 }

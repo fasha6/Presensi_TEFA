@@ -7,6 +7,8 @@ import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Search, Filter, Eye, TrendingUp, TrendingDown } from "lucide-react";
+import { useAuth } from "../lib/auth";
+import { getAllowedClassesForRole, homeroomAssignment, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
 
 interface Student {
   id: number;
@@ -21,6 +23,12 @@ interface Student {
 }
 
 export function StudentsPage() {
+  const { user } = useAuth();
+  const role = user?.role;
+  const isSecretary = role === "secretary";
+  const isHomeroom = role === "homeroom";
+  const isTeacher = role === "teacher";
+  const hasLockedClass = isSecretary || isHomeroom;
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,20 +75,23 @@ export function StudentsPage() {
     return () => controller.abort();
   }, []);
 
-  const filteredStudents = students.filter(student => {
+  const roleScopedStudents = students.filter((student) => isClassAllowedForRole(student.class, role));
+
+  const filteredStudents = roleScopedStudents.filter(student => {
     if (searchQuery && !student.name.toLowerCase().includes(searchQuery.toLowerCase()) && !student.nis.includes(searchQuery)) return false;
-    if (filterClass !== "all" && !student.class.includes(filterClass)) return false;
-    if (filterJurusan !== "all" && student.jurusan !== filterJurusan) return false;
+    if (!hasLockedClass && filterClass !== "all" && !student.class.includes(filterClass)) return false;
+    if (!hasLockedClass && filterJurusan !== "all" && student.jurusan !== filterJurusan) return false;
     if (filterRisk !== "all" && student.riskLevel !== filterRisk) return false;
     return true;
   });
 
   const stats = {
-    total: students.length,
-    high: students.filter(s => s.attendancePercentage >= 90).length,
-    medium: students.filter(s => s.attendancePercentage >= 75 && s.attendancePercentage < 90).length,
-    low: students.filter(s => s.attendancePercentage < 75).length,
+    total: roleScopedStudents.length,
+    high: roleScopedStudents.filter(s => s.attendancePercentage >= 90).length,
+    medium: roleScopedStudents.filter(s => s.attendancePercentage >= 75 && s.attendancePercentage < 90).length,
+    low: roleScopedStudents.filter(s => s.attendancePercentage < 75).length,
   };
+  const allowedClasses = getAllowedClassesForRole(role);
 
   return (
     <div>
@@ -149,37 +160,44 @@ export function StudentsPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Cari nama atau NIS..."
+                  placeholder="Cari nama atau NIS/USN..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
 
-              <Select value={filterJurusan} onValueChange={setFilterJurusan}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Semua Jurusan" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Jurusan</SelectItem>
-                  <SelectItem value="RPL">RPL</SelectItem>
-                  <SelectItem value="TKJ">TKJ</SelectItem>
-                  <SelectItem value="MM">MM</SelectItem>
-                  <SelectItem value="OTKP">OTKP</SelectItem>
-                </SelectContent>
-              </Select>
+              {!hasLockedClass && (
+                <Select value={filterJurusan} onValueChange={setFilterJurusan}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Semua Jurusan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Jurusan</SelectItem>
+                    {schoolMajors.map((major) => (
+                      <SelectItem key={major} value={major}>
+                        {major}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
-              <Select value={filterClass} onValueChange={setFilterClass}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Semua Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Kelas</SelectItem>
-                  <SelectItem value="XII">Kelas XII</SelectItem>
-                  <SelectItem value="XI">Kelas XI</SelectItem>
-                  <SelectItem value="X">Kelas X</SelectItem>
-                </SelectContent>
-              </Select>
+              {!hasLockedClass && (
+                <Select value={filterClass} onValueChange={setFilterClass}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder={isTeacher ? "Kelas yang diajar" : "Semua Kelas"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{isTeacher ? "Semua Kelas Jadwal" : "Semua Kelas"}</SelectItem>
+                    {(allowedClasses ?? schoolClasses).map((className) => (
+                      <SelectItem key={className} value={className}>
+                        {className}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
               <Select value={filterRisk} onValueChange={setFilterRisk}>
                 <SelectTrigger className="w-48">
@@ -192,6 +210,16 @@ export function StudentsPage() {
                   <SelectItem value="high">Tinggi</SelectItem>
                 </SelectContent>
               </Select>
+              {isSecretary && (
+                <Badge className="bg-blue-100 text-blue-700">
+                  Kelas terkunci: {secretaryAssignment.className}
+                </Badge>
+              )}
+              {isHomeroom && (
+                <Badge className="bg-blue-100 text-blue-700">
+                  Kelas wali terkunci: {homeroomAssignment.className}
+                </Badge>
+              )}
             </div>
           </CardContent>
         </Card>

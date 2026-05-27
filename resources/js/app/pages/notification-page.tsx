@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { MessageSquare, Send, CheckCheck, XCircle, Clock, Filter, Search, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../lib/auth";
+import { isClassAllowedForRole, secretaryAssignment } from "../lib/role-scope";
 
 interface Notification {
   id: number;
@@ -27,7 +28,7 @@ const mockNotifications: Notification[] = [
   {
     id: 1,
     studentName: "Ahmad Rizki Maulana",
-    class: "XII RPL 1",
+    class: "X PPL 1",
     parentPhone: "081234567890",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Ahmad Rizki Maulana tidak hadir pada mata pelajaran PWPB hari ini (14 April 2026) tanpa keterangan. Mohon konfirmasi. Terima kasih.",
     type: "absence",
@@ -38,7 +39,7 @@ const mockNotifications: Notification[] = [
   {
     id: 2,
     studentName: "Siti Nurhaliza",
-    class: "XI TKJ 2",
+    class: "XI PPL 1",
     parentPhone: "081298765432",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Siti Nurhaliza terlambat masuk sekolah hari ini (14 April 2026) pukul 08:15. Mohon perhatian. Terima kasih.",
     type: "late",
@@ -49,7 +50,7 @@ const mockNotifications: Notification[] = [
   {
     id: 3,
     studentName: "Budi Santoso",
-    class: "XII MM 1",
+    class: "XII TJK 3",
     parentPhone: "081276543210",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Budi Santoso telah menerima Surat Peringatan (SP 1) terkait pelanggaran tata tertib sekolah. Mohon untuk dapat hadir ke sekolah. Terima kasih.",
     type: "sp",
@@ -60,7 +61,7 @@ const mockNotifications: Notification[] = [
   {
     id: 4,
     studentName: "Devi Anggraini",
-    class: "XI RPL 1",
+    class: "XI AKL 3",
     parentPhone: "081265432109",
     message: "Assalamualaikum, Bapak/Ibu. Selamat! Ananda Devi Anggraini meraih Juara 1 Lomba Web Design tingkat Provinsi. Terima kasih atas dukungannya.",
     type: "achievement",
@@ -71,7 +72,7 @@ const mockNotifications: Notification[] = [
   {
     id: 5,
     studentName: "Eko Prasetyo",
-    class: "XII RPL 2",
+    class: "XII PM 2",
     parentPhone: "081254321098",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Eko Prasetyo tidak hadir hari ini. Mohon konfirmasi.",
     type: "absence",
@@ -81,7 +82,7 @@ const mockNotifications: Notification[] = [
   {
     id: 6,
     studentName: "Fatimah Zahra",
-    class: "XI MM 2",
+    class: "XI MPL 2",
     parentPhone: "081243210987",
     message: "Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda Fatimah Zahra terlambat masuk kelas.",
     type: "late",
@@ -97,6 +98,8 @@ export function NotificationPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [draftMessage, setDraftMessage] = useState("");
+  const [draftType, setDraftType] = useState<Notification["type"]>("absence");
   const canManageNotifications = user?.role !== "student" && user?.role !== "parent";
 
   const roleScopedNotifications = notifications.filter((notif) => {
@@ -108,12 +111,12 @@ export function NotificationPage() {
       return notif.studentName === "Ahmad Rizki Maulana";
     }
 
-    if (user?.role === "secretary" || user?.role === "homeroom") {
-      return notif.class.includes("RPL 1");
+    if (user?.role === "secretary" || user?.role === "homeroom" || user?.role === "teacher") {
+      return isClassAllowedForRole(notif.class, user.role);
     }
 
     if (user?.role === "major_head") {
-      return notif.class.includes("RPL");
+      return notif.class.includes("PPL");
     }
 
     return true;
@@ -198,6 +201,13 @@ export function NotificationPage() {
         </div>
 
         {canManageNotifications && <NotificationRules />}
+        {user?.role === "secretary" && (
+          <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-400/40 dark:bg-blue-400/10">
+            <CardContent className="pt-6 text-sm text-blue-900 dark:text-blue-100">
+              Sekretaris hanya melihat notifikasi kelas {secretaryAssignment.className}. Template dipakai untuk bantu wali kelas menghubungi orang tua atau siswa.
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters & Actions */}
         <Card className="mb-6">
@@ -255,6 +265,8 @@ export function NotificationPage() {
                     <DialogTitle>Kirim Notifikasi Baru</DialogTitle>
                   </DialogHeader>
                   <NewNotificationForm
+                    initialMessage={draftMessage}
+                    initialType={draftType}
                     onSubmitSuccess={() => {
                       setIsCreateOpen(false);
                       toast.success("Notifikasi berhasil dikirim!");
@@ -295,21 +307,41 @@ export function NotificationPage() {
                 title="Ketidakhadiran"
                 message="Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda [NAMA] tidak hadir pada mata pelajaran [MAPEL] hari ini ([TANGGAL]) tanpa keterangan. Mohon konfirmasi. Terima kasih."
                 type="absence"
+                onUse={(message, type) => {
+                  setDraftMessage(message);
+                  setDraftType(type);
+                  setIsCreateOpen(true);
+                }}
               />
               <MessageTemplate
                 title="Keterlambatan"
                 message="Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda [NAMA] terlambat masuk sekolah hari ini ([TANGGAL]) pukul [JAM]. Mohon perhatian. Terima kasih."
                 type="late"
+                onUse={(message, type) => {
+                  setDraftMessage(message);
+                  setDraftType(type);
+                  setIsCreateOpen(true);
+                }}
               />
               <MessageTemplate
                 title="Surat Peringatan"
                 message="Assalamualaikum, Bapak/Ibu. Kami informasikan bahwa ananda [NAMA] telah menerima Surat Peringatan ([JENIS_SP]) terkait [ALASAN]. Mohon untuk dapat hadir ke sekolah. Terima kasih."
                 type="sp"
+                onUse={(message, type) => {
+                  setDraftMessage(message);
+                  setDraftType(type);
+                  setIsCreateOpen(true);
+                }}
               />
               <MessageTemplate
                 title="Prestasi"
                 message="Assalamualaikum, Bapak/Ibu. Selamat! Ananda [NAMA] meraih [PRESTASI]. Terima kasih atas dukungannya."
                 type="achievement"
+                onUse={(message, type) => {
+                  setDraftMessage(message);
+                  setDraftType(type);
+                  setIsCreateOpen(true);
+                }}
               />
             </div>
           </CardContent>
@@ -429,31 +461,52 @@ function NotificationCard({ notification }: { notification: Notification }) {
   );
 }
 
-function MessageTemplate({ title, message, type }: { title: string; message: string; type: string }) {
+function MessageTemplate({
+  title,
+  message,
+  type,
+  onUse,
+}: {
+  title: string;
+  message: string;
+  type: Notification["type"];
+  onUse: (message: string, type: Notification["type"]) => void;
+}) {
   return (
     <div className="p-4 border border-gray-200 rounded-lg hover:border-[#1E3A8A] transition-colors cursor-pointer">
       <h3 className="font-medium text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-600 mb-3">{message}</p>
-      <Button variant="outline" size="sm" className="w-full">
+      <Button variant="outline" size="sm" className="w-full" onClick={() => onUse(message, type)}>
         Gunakan Template
       </Button>
     </div>
   );
 }
 
-function NewNotificationForm({ onSubmitSuccess }: { onSubmitSuccess: () => void }) {
+function NewNotificationForm({
+  initialMessage,
+  initialType,
+  onSubmitSuccess,
+}: {
+  initialMessage: string;
+  initialType: Notification["type"];
+  onSubmitSuccess: () => void;
+}) {
+  const [message, setMessage] = useState(initialMessage);
+  const [type, setType] = useState(initialType);
+
   return (
     <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); onSubmitSuccess(); }}>
       <div>
         <label className="text-sm font-medium text-gray-700 mb-2 block">Pilih Siswa</label>
-        <Select>
+        <Select value={type} onValueChange={(value) => setType(value as Notification["type"])}>
           <SelectTrigger>
             <SelectValue placeholder="Pilih siswa..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Ahmad Rizki Maulana - XII RPL 1</SelectItem>
-            <SelectItem value="2">Siti Nurhaliza - XI TKJ 2</SelectItem>
-            <SelectItem value="3">Budi Santoso - XII MM 1</SelectItem>
+            <SelectItem value="1">Ahmad Rizki Maulana - X PPL 1</SelectItem>
+            <SelectItem value="2">Siti Nurhaliza - XI PPL 1</SelectItem>
+            <SelectItem value="3">Budi Santoso - XII TJK 3</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -483,6 +536,8 @@ function NewNotificationForm({ onSubmitSuccess }: { onSubmitSuccess: () => void 
         <label className="text-sm font-medium text-gray-700 mb-2 block">Pesan</label>
         <Textarea 
           placeholder="Tulis pesan untuk orang tua..."
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
           rows={6}
         />
         <p className="text-xs text-gray-500 mt-1">
