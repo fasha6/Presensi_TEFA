@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, ClipboardCheck, Users, FileWarning, Bell, Settings, GraduationCap, Menu, X, UserRound, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, FileWarning, Bell, Settings, GraduationCap, Menu, X, UserRound, Clock, type LucideIcon } from "lucide-react";
 import { cn } from "../ui/utils";
 import { DemoRole, useAuth } from "../../lib/auth";
 
@@ -13,6 +13,7 @@ const allRoles: DemoRole[] = [
   "bk",
   "student_affairs",
   "curriculum",
+  "pks",
   "operator",
   "principal",
 ];
@@ -25,6 +26,7 @@ const studentDataRoles: DemoRole[] = [
   "bk",
   "student_affairs",
   "curriculum",
+  "pks",
   "operator",
   "principal",
 ];
@@ -32,6 +34,7 @@ const studentDataRoles: DemoRole[] = [
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", roles: allRoles },
   { icon: ClipboardCheck, label: "Presensi", path: "/presensi", roles: ["secretary", "homeroom", "teacher", "operator"] },
+  { icon: Clock, label: "Presensi Terlambat", path: "/terlambat", roles: ["pks", "student_affairs", "operator", "principal"] },
   { icon: Users, label: "Siswa", path: "/siswa", roles: studentDataRoles },
   { icon: UserRound, label: "Profil Saya", path: "/siswa/1", roles: ["student"] },
   { icon: UserRound, label: "Data Anak", path: "/siswa/1", roles: ["parent"] },

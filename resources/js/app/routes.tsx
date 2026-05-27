@@ -4,6 +4,7 @@ import { RoleRoute } from "./components/auth/role-route";
 import { MainLayout } from "./components/layout/main-layout";
 import { DashboardPage } from "./pages/dashboard-page";
 import { AttendancePage } from "./pages/attendance-page";
+import { GateAttendancePage } from "./pages/gate-attendance-page";
 import { LoginPage } from "./pages/login-page";
 import { StudentsPage } from "./pages/students-page";
 import { StudentDetailPage } from "./pages/student-detail-page";
@@ -34,9 +35,17 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "terlambat",
+            element: (
+              <RoleRoute allowedRoles={["pks", "student_affairs", "operator", "principal"]}>
+                <GateAttendancePage />
+              </RoleRoute>
+            ),
+          },
+          {
             path: "siswa",
             element: (
-              <RoleRoute allowedRoles={["secretary", "homeroom", "major_head", "teacher", "bk", "student_affairs", "curriculum", "operator", "principal"]}>
+              <RoleRoute allowedRoles={["secretary", "homeroom", "major_head", "teacher", "bk", "student_affairs", "curriculum", "pks", "operator", "principal"]}>
                 <StudentsPage />
               </RoleRoute>
             ),
@@ -44,7 +53,7 @@ export const router = createBrowserRouter([
           {
             path: "siswa/:id",
             element: (
-              <RoleRoute allowedRoles={["secretary", "homeroom", "major_head", "teacher", "student", "parent", "bk", "student_affairs", "curriculum", "operator", "principal"]}>
+              <RoleRoute allowedRoles={["secretary", "homeroom", "major_head", "teacher", "student", "parent", "bk", "student_affairs", "curriculum", "pks", "operator", "principal"]}>
                 <StudentDetailPage />
               </RoleRoute>
             ),

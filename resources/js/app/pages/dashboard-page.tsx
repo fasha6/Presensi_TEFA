@@ -104,6 +104,10 @@ function RoleDashboard({ role }: { role: DemoRole }) {
     return <CurriculumDashboard />;
   }
 
+  if (role === "pks") {
+    return <PKSDashboard />;
+  }
+
   if (role === "operator") {
     return <OperatorDashboard />;
   }
@@ -751,6 +755,63 @@ function CurriculumDashboard() {
           <BlockWeek label="Minggu 5-6" status="Berikutnya" detail="Assessment, remedial, dan rekap akhir" />
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PKSDashboard() {
+  return (
+    <div className="space-y-6">
+      <ScopeNotice
+        title="Akses PKS"
+        description="PKS bertugas mencatat siswa yang datang setelah batas waktu masuk sekolah. Data telat diteruskan ke wali kelas, guru mapel, BK, dan kesiswaan."
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Terlambat Hari Ini" value="7" subtitle="Tercatat oleh PKS" icon={Clock} iconColor="bg-amber-100 text-amber-600" />
+        <StatCard title="Sudah Diproses" value="5" subtitle="Diberi arahan masuk kelas" icon={CheckCircle} iconColor="bg-green-100 text-green-600" />
+        <StatCard title="Perlu Konfirmasi" value="2" subtitle="Alasan belum jelas" icon={AlertTriangle} iconColor="bg-red-100 text-red-600" />
+        <StatCard title="Notifikasi Terkirim" value="4" subtitle="Wali kelas/orang tua" icon={BellIcon} iconColor="bg-blue-100 text-blue-600" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Presensi Terlambat</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <ScheduleItem time="07:15 - selesai" class="Piket PKS" subject="Catat siswa terlambat" status="current" />
+            <p className="text-sm text-gray-600">
+              Cari siswa berdasarkan nama atau NIS, pilih alasan terlambat, lalu simpan sebagai status telat.
+            </p>
+            <Button asChild className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+              <Link to="/terlambat">Buka Presensi Terlambat</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Relasi Data PKS</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="font-medium text-gray-900">Wali Kelas</p>
+              <p className="text-sm text-gray-600">Menerima daftar siswa kelasnya yang terlambat.</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="font-medium text-gray-900">Guru Mapel</p>
+              <p className="text-sm text-gray-600">Melihat siswa telat saat presensi jam pertama.</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="font-medium text-gray-900">BK dan Kesiswaan</p>
+              <p className="text-sm text-gray-600">Menindaklanjuti siswa yang terlambat berulang.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <AuditLogPanel />
     </div>
   );
 }

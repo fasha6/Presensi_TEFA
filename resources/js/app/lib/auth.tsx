@@ -10,6 +10,7 @@ export type DemoRole =
   | "bk"
   | "student_affairs"
   | "curriculum"
+  | "pks"
   | "operator"
   | "principal";
 
@@ -88,6 +89,14 @@ export const demoUsers: DemoUser[] = [
     password: "demo123",
     role: "curriculum",
     roleLabel: "Waka Kurikulum",
+  },
+  {
+    id: "pks",
+    name: "Pak Rudi",
+    email: "pks@demo.test",
+    password: "demo123",
+    role: "pks",
+    roleLabel: "Petugas PKS",
   },
   {
     id: "operator",
