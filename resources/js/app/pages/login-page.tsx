@@ -8,11 +8,11 @@ import { Label } from "../components/ui/label";
 import { useAuth } from "../lib/auth";
 
 export function LoginPage() {
-  const { user, demoUsers, login, loginAs } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("guru@demo.test");
-  const [password, setPassword] = useState("demo123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const loginState = (location.state as { from?: string; resetRedirect?: boolean } | null) ?? null;
@@ -34,14 +34,9 @@ export function LoginPage() {
     navigate(redirectTo, { replace: true });
   };
 
-  const handleLoginAs = (userId: string) => {
-    loginAs(userId);
-    navigate(redirectTo, { replace: true });
-  };
-
   return (
     <main className="min-h-screen bg-[#F1F5F9] px-4 py-8 text-gray-900 dark:bg-background dark:text-foreground">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center justify-center">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md items-center justify-center">
         <Card className="w-full shadow-lg">
           <CardHeader className="space-y-4">
             <div className="flex items-center gap-3">
@@ -56,7 +51,7 @@ export function LoginPage() {
             <div>
               <CardTitle className="text-2xl">Login</CardTitle>
               <p className="mt-2 text-sm text-gray-500 dark:text-muted-foreground">
-                Pilih akun sesuai peran untuk mencoba dashboard presensi, siswa, SP, dan notifikasi.
+                Masukkan email dan password untuk masuk ke dashboard presensi.
               </p>
             </div>
           </CardHeader>
@@ -69,7 +64,8 @@ export function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    placeholder="guru@demo.test"
+                    placeholder="Masukkan email"
+                    autoComplete="email"
                   />
                 </div>
                 <div className="space-y-2">
@@ -79,7 +75,8 @@ export function LoginPage() {
                     type="password"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    placeholder="demo123"
+                    placeholder="Masukkan password"
+                    autoComplete="current-password"
                   />
                 </div>
                 {error && (
@@ -92,25 +89,6 @@ export function LoginPage() {
                   Masuk
                 </Button>
               </form>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Akun demo cepat</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {demoUsers.map((demoUser) => (
-                    <button
-                      key={demoUser.id}
-                      type="button"
-                      onClick={() => handleLoginAs(demoUser.id)}
-                      className="rounded-lg border border-gray-200 bg-white p-3 text-left transition hover:border-[#1E3A8A] hover:bg-blue-50 dark:border-border dark:bg-card dark:hover:border-primary dark:hover:bg-accent"
-                    >
-                      <p className="font-semibold text-gray-900 dark:text-foreground">{demoUser.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-muted-foreground">{demoUser.roleLabel}</p>
-                      <p className="mt-2 text-xs text-gray-500 dark:text-muted-foreground">{demoUser.email}</p>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 dark:text-muted-foreground">Semua akun demo memakai password: demo123</p>
-              </div>
           </CardContent>
         </Card>
       </div>
