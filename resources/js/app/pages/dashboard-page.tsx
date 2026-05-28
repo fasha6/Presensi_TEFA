@@ -780,7 +780,7 @@ function PKSDashboard() {
             <CardTitle>Presensi Terlambat</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <ScheduleItem time="07:15 - selesai" class="Piket PKS" subject="Catat siswa terlambat" status="current" />
+            <ScheduleItem time="06:30 - selesai" class="Piket PKS" subject="Catat siswa terlambat" status="current" />
             <p className="text-sm text-gray-600">
               Cari siswa berdasarkan nama atau NIS, pilih alasan terlambat, lalu simpan sebagai status telat.
             </p>

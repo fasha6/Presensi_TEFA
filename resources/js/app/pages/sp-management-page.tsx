@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { FileText, Plus, Filter, Eye, CheckCircle, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../lib/auth";
-import { homeroomAssignment, isClassAllowedForRole, schoolMajors } from "../lib/role-scope";
+import { getClassesForMajor, homeroomAssignment, isClassAllowedForRole, schoolClasses, schoolMajors } from "../lib/role-scope";
 
 interface SPRecord {
   id: number;
@@ -31,6 +31,7 @@ export function SPManagementPage() {
   const { user } = useAuth();
   const isHomeroom = user?.role === "homeroom";
   const [records, setRecords] = useState<SPRecord[]>([]);
+  const [filterJurusan, setFilterJurusan] = useState("all");
   const [filterClass, setFilterClass] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedRecord, setSelectedRecord] = useState<SPRecord | null>(null);
@@ -50,12 +51,20 @@ export function SPManagementPage() {
   }, []);
 
   const roleScopedRecords = records.filter((record) => isClassAllowedForRole(record.class, user?.role));
+  const classOptions = getClassesForMajor(filterJurusan, schoolClasses);
 
   const filteredRecords = roleScopedRecords.filter(record => {
-    if (filterClass !== "all" && !record.class.includes(filterClass)) return false;
+    if (filterJurusan !== "all" && !record.class.includes(` ${filterJurusan} `)) return false;
+    if (filterClass !== "all" && record.class !== filterClass) return false;
     if (filterStatus !== "all" && record.status !== filterStatus) return false;
     return true;
   });
+
+  useEffect(() => {
+    if (filterClass !== "all" && !classOptions.includes(filterClass)) {
+      setFilterClass("all");
+    }
+  }, [classOptions, filterClass]);
 
   const stats = {
     total: roleScopedRecords.length,
@@ -160,19 +169,34 @@ export function SPManagementPage() {
                     Kelas wali: {homeroomAssignment.className}
                   </Badge>
                 ) : (
-                  <Select value={filterClass} onValueChange={setFilterClass}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Semua Kelas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Kelas</SelectItem>
-                      {schoolMajors.map((major) => (
-                        <SelectItem key={major} value={major}>
-                          {major}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <>
+                    <Select value={filterJurusan} onValueChange={setFilterJurusan}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Semua Jurusan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua Jurusan</SelectItem>
+                        {schoolMajors.map((major) => (
+                          <SelectItem key={major} value={major}>
+                            {major}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterClass} onValueChange={setFilterClass}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Semua Kelas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua Kelas</SelectItem>
+                        {classOptions.map((className) => (
+                          <SelectItem key={className} value={className}>
+                            {className}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
                 )}
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-48">

@@ -8,7 +8,7 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Search, Filter, Eye, TrendingUp, TrendingDown } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { getAllowedClassesForRole, homeroomAssignment, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
+import { getAllowedClassesForRole, getClassesForMajor, homeroomAssignment, isClassAllowedForRole, schoolClasses, schoolMajors, secretaryAssignment } from "../lib/role-scope";
 
 interface Student {
   id: number;
@@ -76,10 +76,12 @@ export function StudentsPage() {
   }, []);
 
   const roleScopedStudents = students.filter((student) => isClassAllowedForRole(student.class, role));
+  const allowedClasses = getAllowedClassesForRole(role);
+  const classOptions = getClassesForMajor(filterJurusan, allowedClasses ?? schoolClasses);
 
   const filteredStudents = roleScopedStudents.filter(student => {
     if (searchQuery && !student.name.toLowerCase().includes(searchQuery.toLowerCase()) && !student.nis.includes(searchQuery)) return false;
-    if (!hasLockedClass && filterClass !== "all" && !student.class.includes(filterClass)) return false;
+    if (!hasLockedClass && filterClass !== "all" && student.class !== filterClass) return false;
     if (!hasLockedClass && filterJurusan !== "all" && student.jurusan !== filterJurusan) return false;
     if (filterRisk !== "all" && student.riskLevel !== filterRisk) return false;
     return true;
@@ -91,7 +93,12 @@ export function StudentsPage() {
     medium: roleScopedStudents.filter(s => s.attendancePercentage >= 75 && s.attendancePercentage < 90).length,
     low: roleScopedStudents.filter(s => s.attendancePercentage < 75).length,
   };
-  const allowedClasses = getAllowedClassesForRole(role);
+
+  useEffect(() => {
+    if (filterClass !== "all" && !classOptions.includes(filterClass)) {
+      setFilterClass("all");
+    }
+  }, [classOptions, filterClass]);
 
   return (
     <div>
@@ -190,7 +197,7 @@ export function StudentsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{isTeacher ? "Semua Kelas Jadwal" : "Semua Kelas"}</SelectItem>
-                    {(allowedClasses ?? schoolClasses).map((className) => (
+                    {classOptions.map((className) => (
                       <SelectItem key={className} value={className}>
                         {className}
                       </SelectItem>

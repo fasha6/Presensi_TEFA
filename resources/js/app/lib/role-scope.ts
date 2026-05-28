@@ -122,6 +122,14 @@ export function isClassAllowedForRole(className: string, role?: DemoRole | null)
   return !allowedClasses || allowedClasses.includes(className);
 }
 
+export function getClassesForMajor(major: string, classes: readonly string[] = schoolClasses) {
+  if (major === "all") {
+    return [...classes];
+  }
+
+  return classes.filter((className) => className.includes(` ${major} `));
+}
+
 export function getTeacherScheduleByClass(className: string) {
   return teacherScheduleToday.find((schedule) => schedule.className === className);
 }

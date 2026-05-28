@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Clock, Loader2, Save, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "../components/layout/header";
+import { getClassesForMajor, schoolClasses, schoolMajors } from "../lib/role-scope";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -37,6 +38,8 @@ const lateReasonOptions = [
   "Lainnya",
 ];
 
+const lateThresholdTime = "06:30";
+
 function formatDateForApi(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -61,6 +64,7 @@ export function GateAttendancePage() {
   const [gateAttendances, setGateAttendances] = useState<GateAttendance[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMajor, setSelectedMajor] = useState("all");
   const [selectedClass, setSelectedClass] = useState("all");
   const [lateReason, setLateReason] = useState("Tidak ada keterangan");
   const [note, setNote] = useState("");
@@ -125,19 +129,19 @@ export function GateAttendancePage() {
     return () => controller.abort();
   }, []);
 
-  const classOptions = useMemo(
-    () => Array.from(new Set(students.map((student) => student.class))).sort(),
-    [students],
-  );
-
   const recordedStudentIds = useMemo(
     () => new Set(gateAttendances.map((attendance) => attendance.student_id)),
     [gateAttendances],
+  );
+  const classOptions = useMemo(
+    () => getClassesForMajor(selectedMajor, schoolClasses),
+    [selectedMajor],
   );
 
   const filteredStudents = useMemo(
     () =>
       students.filter((student) => {
+        const matchesMajor = selectedMajor === "all" || student.jurusan === selectedMajor;
         const matchesClass = selectedClass === "all" || student.class === selectedClass;
         const query = searchQuery.trim().toLowerCase();
         const matchesSearch =
@@ -145,10 +149,16 @@ export function GateAttendancePage() {
           student.name.toLowerCase().includes(query) ||
           student.nis.toLowerCase().includes(query);
 
-        return matchesClass && matchesSearch;
+        return matchesMajor && matchesClass && matchesSearch;
       }),
-    [searchQuery, selectedClass, students],
+    [searchQuery, selectedClass, selectedMajor, students],
   );
+
+  useEffect(() => {
+    if (selectedClass !== "all" && !classOptions.includes(selectedClass)) {
+      setSelectedClass("all");
+    }
+  }, [classOptions, selectedClass]);
 
   const selectedStudent = students.find((student) => String(student.id) === selectedStudentId);
 
@@ -219,7 +229,7 @@ export function GateAttendancePage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-gray-600">Waktu Batas Telat</p>
-              <p className="mt-1 text-3xl font-semibold text-gray-900">07:15</p>
+              <p className="mt-1 text-3xl font-semibold text-gray-900">{lateThresholdTime}</p>
             </CardContent>
           </Card>
           <Card>
@@ -243,16 +253,29 @@ export function GateAttendancePage() {
               <CardTitle>Catat Siswa Terlambat</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Cari nama atau NIS siswa..."
+                    placeholder="Cari nama atau NIS/NISN siswa..."
                     className="pl-10"
                   />
                 </div>
+                <Select value={selectedMajor} onValueChange={setSelectedMajor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Semua jurusan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua jurusan</SelectItem>
+                    {schoolMajors.map((major) => (
+                      <SelectItem key={major} value={major}>
+                        {major}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua kelas" />
