@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, ClipboardCheck, Users, FileWarning, Bell, Settings, GraduationCap, Menu, X, UserRound, Clock, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, FileWarning, Bell, Settings, GraduationCap, Menu, X, UserRound, Clock, BarChart3, type LucideIcon } from "lucide-react";
 import { cn } from "../ui/utils";
 import { DemoRole, useAuth } from "../../lib/auth";
 
@@ -38,6 +38,7 @@ const menuItems = [
   { icon: Users, label: "Siswa", path: "/siswa", roles: studentDataRoles },
   { icon: UserRound, label: "Profil Saya", path: "/siswa/1", roles: ["student"] },
   { icon: UserRound, label: "Data Anak", path: "/siswa/1", roles: ["parent"] },
+  { icon: BarChart3, label: "Laporan", path: "/laporan", roles: ["secretary", "homeroom", "teacher", "pks", "bk", "student_affairs", "curriculum", "operator", "principal", "major_head"] },
   { icon: FileWarning, label: "SP & Pembinaan", path: "/sp", roles: ["homeroom", "bk", "student_affairs", "operator", "principal"] },
   { icon: Bell, label: "Notifikasi", path: "/notifikasi", roles: allRoles },
   { icon: Settings, label: "Pengaturan", path: "/pengaturan", roles: allRoles },

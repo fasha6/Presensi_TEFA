@@ -4,6 +4,7 @@ import { RoleRoute } from "./components/auth/role-route";
 import { MainLayout } from "./components/layout/main-layout";
 import { DashboardPage } from "./pages/dashboard-page";
 import { AttendancePage } from "./pages/attendance-page";
+import { ReportPage } from "./pages/report-page";
 import { GateAttendancePage } from "./pages/gate-attendance-page";
 import { LoginPage } from "./pages/login-page";
 import { StudentsPage } from "./pages/students-page";
@@ -63,6 +64,14 @@ export const router = createBrowserRouter([
             element: (
               <RoleRoute allowedRoles={["homeroom", "bk", "student_affairs", "operator", "principal"]}>
                 <SPManagementPage />
+              </RoleRoute>
+            ),
+          },
+          {
+            path: "laporan",
+            element: (
+              <RoleRoute allowedRoles={["secretary", "homeroom", "teacher", "operator", "pks", "bk", "student_affairs", "principal", "curriculum", "major_head"]}>
+                <ReportPage />
               </RoleRoute>
             ),
           },
